@@ -44,12 +44,6 @@ Or with **bun**:
 bun add @vimazing/vim-maze
 ```
 
-Optionally pull in the default maze styles:
-
-```ts
-import "@vimazing/vim-maze/maze.css";
-```
-
 ---
 
 ## Quick Start
