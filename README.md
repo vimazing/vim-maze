@@ -57,7 +57,6 @@ import "@vimazing/vim-maze/maze.css";
 ```tsx
 import { useEffect } from "react";
 import { useGame } from "@vimazing/vim-maze";
-import "@vimazing/vim-maze/maze.css";
 
 export function MazeGame() {
   const { containerRef, gameStatus, startGame } = useGame(20, 16);
