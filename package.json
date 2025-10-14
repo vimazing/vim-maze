@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "description": "VIMazing VIM Maze engine — a lightweight, typed React hook set for maze-based games.",
   "author": "André Padez <you@example.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vimazing/vim-maze.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vimazing/vim-maze/issues"
+  },
+  "homepage": "https://github.com/vimazing/vim-maze#readme",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
