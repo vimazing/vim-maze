@@ -1,0 +1,44 @@
+{
+  "name": "@vimazing/vim-maze",
+  "version": "1.0.0",
+  "description": "VIMazing VIM Maze engine — a lightweight, typed React hook set for maze-based games.",
+  "author": "André Padez <you@example.com>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./useGame": {
+      "import": "./dist/useGame/index.js",
+      "types": "./dist/useGame/index.d.ts"
+    },
+    "./useScore": {
+      "import": "./dist/useScore/index.js",
+      "types": "./dist/useScore/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    },
+    "./*.css": "./dist/*.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --outDir dist --declaration --emitDeclarationOnly false && node -e \"const fs = require('node:fs'); fs.mkdirSync('dist', { recursive: true }); fs.copyFileSync('src/maze.css', 'dist/maze.css');\"",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "@types/react": "^19.2.2",
+    "typescript": "~5.9.3"
+  }
+}
