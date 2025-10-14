@@ -1,6 +1,6 @@
 {
   "name": "@vimazing/vim-maze",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "VIMazing VIM Maze engine — a lightweight, typed React hook set for maze-based games.",
   "author": "André Padez <you@example.com>",
   "repository": {
