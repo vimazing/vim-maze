@@ -1,5 +1,4 @@
 import type { MazeData } from "./types";
-import "./maze.css";
 
 export class MazeRenderer {
   private mazeData: MazeData;

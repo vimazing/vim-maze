@@ -4,7 +4,7 @@
 
 Lightweight, typed **React hooks** and utilities for building interactive maze games with VIM-inspired controls.
 
-Part of the [VIMazing](https://github.com/andrepadez/vimazing-vimaze) project.
+Part of the [VIMazing](https://vimazing.com) project - [GitHub](https://github.com/andrepadez/vimazing-vimaze).
 
 ---
 
@@ -51,6 +51,7 @@ bun add @vimazing/vim-maze
 ```tsx
 import { useEffect } from "react";
 import { useGame } from "@vimazing/vim-maze";
+import "@vimazing/vim-maze/game.css";
 
 export function MazeGame() {
   const { containerRef, gameStatus, startGame } = useGame(20, 16);
@@ -68,6 +69,8 @@ export function MazeGame() {
   );
 }
 ```
+
+> **Note:** You must manually import the CSS file. The package exports styles but does not auto-import them, giving you control over when and how styles are loaded.
 
 Default controls:
 
