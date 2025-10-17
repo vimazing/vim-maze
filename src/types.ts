@@ -1,43 +1,38 @@
-import { useScore } from "./useScore";
-import { useGame } from "./useGame";
-export type UseGameType = ReturnType<typeof useGame>;
-export type UseScoreType = ReturnType<typeof useScore>;
+import type { RefObject } from 'react';
+export * from './useGame';
+export * from './useBoard';
+export * from './useCursor';
 
-export type GamePhase = "idle" | "playing";
-export type PlayStatus = "started" | "hasKey" | "game-over" | "game-won";
-export type GameStatus = "waiting" | "started" | "hasKey" | "game-over" | "game-won";
+export type GameStatus = 'waiting' | 'started' | 'hasKey' | 'paused' | 'game-over' | 'game-won'
 
-export const isPlaying = (status: GameStatus): status is PlayStatus =>
-  status === "started" || status === "hasKey" || status === "game-over" || status === "game-won";
-
-export const getGamePhase = (status: GameStatus): GamePhase =>
-  status === "waiting" ? "idle" : "playing";
-
-export type KeyLogEntry = { key: string; timestamp: number };
-export type KeyLogProvider = { keyLog: KeyLogEntry[] };
-
-export type GameScoreContext = {
+export type GameManager = { //return type of useGame
+  containerRef: RefObject<HTMLDivElement | null>;
   gameStatus: GameStatus;
-  setGameStatus: (status: GameStatus) => void;
-  stopGame: () => void;
+  renderBoard: () => void;
+  startGame: () => void;
+  togglePause: (pause?: boolean) => void;
+  quitGame: () => void;
 
-  // Optional — only Maze-type games provide these
-  mazeManager?: {
-    mazeInstanceRef?: { current?: any };
-  };
-  playerManager?: {
-    playerPos?: { r: number; c: number } | null;
-  };
+  cursor: Cursor;
 };
 
-export type UseScoreParams = {
-  gameContext: GameScoreContext;
-  keyManager?: KeyLogProvider;
-};
+export type Cursor = { //return type of useCursor (currently useHero)
+  position: () => Coord;
+  mode: () => CursorMode;
+  move: (dCols: number, dRows: number, count: number) => void;
+  moveLeft: (count?: number) => void;
+  moveRight: (count?: number) => void;
+  moveUp: (count?: number) => void;
+  moveDown: (count?: number) => void;
+}
+
+export type CursorMode = 'normal' | 'insert' | 'replace' | 'visual' | 'visual-line';
+
+
 
 export type PositionTag = "entrance" | "exit" | "key" | "hero";
 
-export type Coord = [number, number];
+export type Coord = { row: number, col: number };
 
 export type CellTag = "wall" | "door" | PositionTag;
 
@@ -52,3 +47,8 @@ export interface MazeData {
   totalSteps: number;
 }
 
+
+export type GameOptions = {
+  rows: number;
+  cols: number;
+};

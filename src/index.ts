@@ -1,6 +1,2 @@
-import './game.css';
-export { MazeGenerator } from "./MazeGenerator";
-export { MazeRenderer } from "./MazeRenderer";
-export * from './useGame';
 export * from './types';
-
+export * from './useGame';

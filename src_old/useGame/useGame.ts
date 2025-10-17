@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useMaze } from "./useMaze";
 import { usePlayer } from "./usePlayer";
 import { useGameStatus } from "./useGameStatus";
@@ -13,24 +12,11 @@ export function useGame(cols: number, rows: number, platformHook?: unknown) {
   const gameManager = useGameStatus(mazeManager, playerManager);
   useHeroRender({ mazeManager, playerManager });
 
-  const { initMaze } = mazeManager;
+  const { render } = mazeManager;
   const { movePlayer } = playerManager;
   const { gameStatus, setGameStatus, startGame, stopGame } = gameManager;
   const { containerRef } = mazeManager;
 
-  // Initialize maze on mount
-  useEffect(() => {
-    initMaze();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const startNewGame = (autoStart = false) => {
-    if (autoStart) {
-      initMaze(true, startGame);
-    } else {
-      initMaze();
-    }
-  };
 
   // 🎮 key bindings integrated
   const keyBindings: UseKeyBindingsType = useKeyBindings({
@@ -56,18 +42,16 @@ export function useGame(cols: number, rows: number, platformHook?: unknown) {
   });
 
   const fullGameManager = {
-    // core game
     containerRef,
     gameStatus,
-    setGameStatus,
     mazeManager,
     playerManager,
+    render,
     startGame,
-    initGame: startNewGame,
+    togglePause,
     movePlayer: (dr: number, dc: number, count: number = 1) =>
       movePlayer(dr, dc, count, gameStatus, setGameStatus),
     stopGame,
-    reset: () => initMaze(),
 
     // key bindings
     ...keyBindings,
