@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import type { RefObject } from 'react';
 import { MazeGenerator } from "./MazeGenerator";
 import { MazeRenderer } from "./MazeRenderer";
 import type { MazeCell } from "../types";

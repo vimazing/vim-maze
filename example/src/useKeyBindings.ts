@@ -1,8 +1,10 @@
 import { useEffect } from "react";
-import type { UseGameType } from "@vimazing/vim-maze";
+import type { GameManager } from "../../src";
 
-export const useKeyBindings = (gameManager: UseGameType) => {
-  const { gameStatus, startGame, stopGame, clearLog } = gameManager;
+export const useKeyBindings = (gameManager: GameManager) => {
+  const { gameStatus, startGame, quitGame, keyManager } = gameManager;
+  const { clearLog } = keyManager;
+
   console.log('gameStatus', gameStatus);
 
   useEffect(() => {
@@ -12,7 +14,7 @@ export const useKeyBindings = (gameManager: UseGameType) => {
         if (["waiting", "game-over", "game-won"].includes(gameStatus)) {
           clearLog();
           if (gameStatus === "game-over" || gameStatus === "game-won") {
-            stopGame();
+            quitGame();
             setTimeout(() => startGame(), 0);
           } else {
             startGame();
@@ -26,13 +28,13 @@ export const useKeyBindings = (gameManager: UseGameType) => {
 
       // cancel count or stop game
       if (e.key === "Escape") {
-        stopGame();
+        quitGame();
         return;
       }
 
       // quit
       if (e.key === "q" || e.key === "Q") {
-        stopGame();
+        quitGame();
         return;
       }
     };
