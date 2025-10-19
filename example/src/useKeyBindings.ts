@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import type { GameManager } from "../../src";
 
 export const useKeyBindings = (gameManager: GameManager) => {
-  const { gameStatus, startGame, quitGame, keyManager } = gameManager;
+  const { gameStatus, renderBoard, startGame, quitGame, keyManager } = gameManager;
   const { clearLog } = keyManager;
 
   useEffect(() => {
@@ -11,6 +11,7 @@ export const useKeyBindings = (gameManager: GameManager) => {
       if (ev.code === "Space") {
         if (["waiting", "game-over", "game-won"].includes(gameStatus)) {
           clearLog();
+          renderBoard();
           if (gameStatus === "game-over" || gameStatus === "game-won") {
             quitGame();
             setTimeout(() => startGame(), 0);

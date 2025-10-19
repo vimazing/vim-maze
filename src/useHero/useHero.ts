@@ -22,6 +22,15 @@ export function useHero(board: BoardManager, gameStatus: GameStatus) {
     }
   }, [gameStatus, heroPos, mazeRef]);
 
+  useEffect(() => {
+    if (gameStatus === 'waiting' || gameStatus === 'game-over' || gameStatus === 'game-won') {
+      setHeroPos(null);
+      const container = containerRef.current;
+      container?.querySelector("#maze")?.classList.remove("finished");
+      container?.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
+    }
+  }, [gameStatus, containerRef]);
+
   const getCellEl = useCallback((r: number, c: number): HTMLElement | null => {
     const container = containerRef.current;
     if (!container) return null;
