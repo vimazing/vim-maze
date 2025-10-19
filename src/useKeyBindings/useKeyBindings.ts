@@ -1,25 +1,9 @@
-import type { GameStatus, KeyLogEntry, UseHeroType } from "../types";
+import type { GameStatus, KeyLogEntry, UseHeroType, Cursor } from "../types";
 import { useEffect, useRef, useState } from "react";
 
-export type CursorBindingContext = {
-  moveLeft: (count?: number) => void;
-  moveRight: (count?: number) => void;
-  moveUp: (count?: number) => void;
-  moveDown: (count?: number) => void;
-  moveToStart: () => void;
-  moveToEnd: () => void;
-  moveToTop: () => void;
-  moveToBottom: () => void;
-  repeatLastMotion: () => void;
-  resetCount: () => void;
-  getCount: () => string;
-  setCount: (digit: string) => void;
-  setLastKey: (key: string) => void;
-  getLastKey: () => string;
-};
 
 type UseKeyBindingsParams = {
-  cursor: CursorBindingContext;
+  cursor: Cursor;
   hero: UseHeroType;
   gameStatus: GameStatus;
   setGameStatus: (status: GameStatus) => void;
@@ -30,10 +14,10 @@ const RELEVANT_KEYS = new Set([
   "1", "2", "3", "4", "5", "6", "7", "8", "9"
 ]);
 
-export const useKeyBindings = ({ cursor, hero, gameStatus, setGameStatus }: UseKeyBindingsParams) => {
-
+export const useKeyBindings = ({ cursor, gameStatus, setGameStatus }: UseKeyBindingsParams) => {
   const [keyLog, setKeyLog] = useState<KeyLogEntry[]>([]);
   const logRef = useRef<KeyLogEntry[]>([]);
+  const { hero } = cursor;
 
   const clearLog = () => {
     logRef.current = [];
@@ -112,6 +96,7 @@ export const useKeyBindings = ({ cursor, hero, gameStatus, setGameStatus }: UseK
       const count = Math.max(1, parseInt(cursor.getCount() || "1", 10));
       cursor.resetCount();
 
+      if (!hero) return;
       switch (ev.key) {
         case "h":
         case "H": hero.moveHero(0, -1, count, gameStatus, setGameStatus); break;

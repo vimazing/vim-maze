@@ -239,13 +239,10 @@ export function useCursor(board: BoardManager, gameStatus: GameStatus) {
     getLastKey,
   }
 
-  if (gameStatus) {
-    return {
-      ...cursorAPI,
-      hero,
-    };
-  }
 
-  return cursorAPI;
+  return {
+    ...cursorAPI,
+    hero,
+  };
 }
 

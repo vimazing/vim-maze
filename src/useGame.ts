@@ -14,7 +14,7 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
 
   const cursor = useCursor(board, gameStatus);
 
-  const keyManager = useKeyBindings({ cursor, hero: cursor.hero, gameStatus, setGameStatus });
+  const keyManager = useKeyBindings({ cursor, gameStatus, setGameStatus });
 
   const gameManager = {
     containerRef,
