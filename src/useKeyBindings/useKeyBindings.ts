@@ -1,4 +1,4 @@
-import type { GameStatus, KeyLogEntry } from "../types";
+import type { GameStatus, KeyLogEntry, UseHeroType } from "../types";
 import { useEffect, useRef, useState } from "react";
 
 export type CursorBindingContext = {
@@ -20,7 +20,9 @@ export type CursorBindingContext = {
 
 type UseKeyBindingsParams = {
   cursor: CursorBindingContext;
+  hero: UseHeroType;
   gameStatus: GameStatus;
+  setGameStatus: (status: GameStatus) => void;
 };
 
 const RELEVANT_KEYS = new Set([
@@ -28,7 +30,7 @@ const RELEVANT_KEYS = new Set([
   "1", "2", "3", "4", "5", "6", "7", "8", "9"
 ]);
 
-export const useKeyBindings = ({ cursor, gameStatus }: UseKeyBindingsParams) => {
+export const useKeyBindings = ({ cursor, hero, gameStatus, setGameStatus }: UseKeyBindingsParams) => {
 
   const [keyLog, setKeyLog] = useState<KeyLogEntry[]>([]);
   const logRef = useRef<KeyLogEntry[]>([]);
@@ -112,13 +114,13 @@ export const useKeyBindings = ({ cursor, gameStatus }: UseKeyBindingsParams) => 
 
       switch (ev.key) {
         case "h":
-        case "H": cursor.moveLeft(count); break;
+        case "H": hero.moveHero(0, -1, count, gameStatus, setGameStatus); break;
         case "j":
-        case "J": cursor.moveDown(count); break;
+        case "J": hero.moveHero(1, 0, count, gameStatus, setGameStatus); break;
         case "k":
-        case "K": cursor.moveUp(count); break;
+        case "K": hero.moveHero(-1, 0, count, gameStatus, setGameStatus); break;
         case "l":
-        case "L": cursor.moveRight(count); break;
+        case "L": hero.moveHero(0, 1, count, gameStatus, setGameStatus); break;
         default: return;
       }
     };

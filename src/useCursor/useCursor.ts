@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import type { CursorMode, Coord, BoardManager, GameStatus } from '../types'
 import { useHero } from './useHero'
 
@@ -12,6 +12,13 @@ export function useCursor(board: BoardManager, gameStatus: GameStatus) {
   const lastKeyRef = useRef<string>("");
 
   const hero = useHero(board, gameStatus);
+
+  // Sync cursor position with hero position
+  useEffect(() => {
+    if (hero.heroPos) {
+      position.current = hero.heroPos;
+    }
+  }, [hero.heroPos]);
 
   function findAnchorTarget(dir: "left" | "right") {
     const m = board.mazeRef.current;
@@ -230,6 +237,13 @@ export function useCursor(board: BoardManager, gameStatus: GameStatus) {
     setCount,
     setLastKey,
     getLastKey,
+  }
+
+  if (gameStatus) {
+    return {
+      ...cursorAPI,
+      hero,
+    };
   }
 
   return cursorAPI;
