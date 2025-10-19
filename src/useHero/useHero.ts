@@ -1,0 +1,204 @@
+import { useRef, useState, useCallback, useEffect } from "react";
+import type { BoardManager, GameStatus, Coord } from "../types";
+import { useHeroRender } from "./useHeroRender";
+
+export function useHero(board: BoardManager, gameStatus: GameStatus) {
+  const { mazeRef, containerRef } = board;
+  const [heroPos, setHeroPos] = useState<Coord | null>(null);
+
+  const animatingRef = useRef(false);
+
+  useEffect(() => {
+    if (gameStatus === 'started' && !heroPos) {
+      const m = mazeRef.current;
+      if (!m.length) return;
+
+      for (let c = 0; c < m[0].length; c++) {
+        if (m[m.length - 1][c].includes("entrance")) {
+          setHeroPos({ row: m.length - 1, col: c });
+          break;
+        }
+      }
+    }
+  }, [gameStatus, heroPos, mazeRef]);
+
+  const getCellEl = useCallback((r: number, c: number): HTMLElement | null => {
+    const container = containerRef.current;
+    if (!container) return null;
+    const mazeDiv = container.querySelector("#maze");
+    if (!mazeDiv) return null;
+    const selector = `.maze-row > div[data-r="${r}"][data-c="${c}"]`;
+    return mazeDiv.querySelector(selector) as HTMLElement | null;
+  }, [containerRef]);
+
+  const leaveTrail = useCallback((r: number, c: number) => {
+    const el = getCellEl(r, c);
+    if (!el) return;
+    el.classList.add("trail");
+    setTimeout(() => el.classList.remove("trail"), 220);
+  }, [getCellEl]);
+
+  const flashInvalid = useCallback(() => {
+    if (!heroPos) return;
+    const el = getCellEl(heroPos.row, heroPos.col);
+    if (!el) return;
+    el.classList.add("invalid-move");
+    setTimeout(() => el.classList.remove("invalid-move"), 180);
+  }, [heroPos, getCellEl]);
+
+  useEffect(() => {
+    const onInvalid = () => flashInvalid();
+    window.addEventListener("maze-invalid", onInvalid);
+    return () => window.removeEventListener("maze-invalid", onInvalid);
+  }, [flashInvalid]);
+
+  const moveHero = useCallback(
+    (
+      dr: number,
+      dc: number,
+      steps: number | undefined,
+      gameStatus: GameStatus,
+      setGameStatus: (s: GameStatus) => void
+    ) => {
+      const m = mazeRef.current;
+      if (!heroPos || !m.length) return;
+      if (gameStatus !== "started" && gameStatus !== "hasKey") return;
+      if (animatingRef.current) return;
+
+      const n = Math.max(1, steps ?? 1);
+
+      const r0 = heroPos.row;
+      const c0 = heroPos.col;
+      let r = r0;
+      let c = c0;
+      let valid = true;
+
+      for (let i = 1; i <= n; i++) {
+        r += dr;
+        c += dc;
+        if (!m[r] || !m[r][c] || m[r][c].includes("wall")) {
+          valid = false;
+          break;
+        }
+        if (m[r][c].includes("exit") && gameStatus !== "hasKey") {
+          valid = false;
+          break;
+        }
+      }
+      if (!valid) {
+        flashInvalid();
+        return;
+      }
+
+      if (n > 1) {
+        animatingRef.current = true;
+
+        let i = 0;
+        let rNow = r0;
+        let cNow = c0;
+        let cancelled = false;
+        let rafId: number | null = null;
+
+        const TOTAL_MS = 64;
+        const framesTarget = Math.max(1, Math.round(TOTAL_MS / 16));
+        const stepsPerFrame = Math.max(1, Math.ceil(n / framesTarget));
+
+        const cancel = () => {
+          cancelled = true;
+          if (rafId !== null) cancelAnimationFrame(rafId);
+          window.removeEventListener("keydown", onEsc);
+          animatingRef.current = false;
+        };
+        const onEsc = (ev: KeyboardEvent) => {
+          if (ev.key === "Escape") cancel();
+        };
+        window.addEventListener("keydown", onEsc);
+
+        const tick = () => {
+          if (cancelled) return;
+
+          let processed = 0;
+          while (processed < stepsPerFrame && i < n) {
+            i += 1;
+            rNow += dr;
+            cNow += dc;
+            leaveTrail(rNow, cNow);
+            processed += 1;
+          }
+
+          setHeroPos({ row: rNow, col: cNow });
+          window.dispatchEvent(new CustomEvent("maze-logic-tick", { detail: { t: performance.now() } }));
+
+          if (i < n) {
+            rafId = requestAnimationFrame(tick);
+          } else {
+            if (m[rNow][cNow].includes("key")) {
+              setGameStatus("hasKey");
+              m[rNow][cNow] = [];
+              const container = containerRef.current;
+              const mazeDiv = container?.querySelector("#maze");
+              const keyCell = mazeDiv?.querySelector<HTMLElement>(
+                `.maze-row > div[data-r="${rNow}"][data-c="${cNow}"]`
+              );
+              keyCell?.classList.remove("key");
+            }
+            if (m[rNow][cNow].includes("exit")) {
+              setGameStatus("game-won");
+            }
+            window.removeEventListener("keydown", onEsc);
+            animatingRef.current = false;
+          }
+        };
+
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      const newR = r0 + dr;
+      const newC = c0 + dc;
+
+      if (!m[newR] || !m[newR][newC]) {
+        flashInvalid();
+        return;
+      }
+      if (m[newR][newC].includes("wall")) {
+        flashInvalid();
+        return;
+      }
+      if (m[newR][newC].includes("exit") && gameStatus !== "hasKey") {
+        flashInvalid();
+        return;
+      }
+
+      if (m[newR][newC].includes("key")) {
+        setGameStatus("hasKey");
+        m[newR][newC] = [];
+        const container = containerRef.current;
+        const mazeDiv = container?.querySelector("#maze");
+        const cell = mazeDiv?.querySelector<HTMLElement>(
+          `.maze-row > div[data-r="${newR}"][data-c="${newC}"]`
+        );
+        cell?.classList.remove("key");
+      }
+      if (m[newR][newC].includes("exit")) {
+        setGameStatus("game-won");
+      }
+
+      setHeroPos({ row: newR, col: newC });
+    },
+    [heroPos, mazeRef, containerRef, flashInvalid, leaveTrail]
+  );
+
+  const hero = {
+    heroPos,
+    setHeroPos,
+    moveHero,
+  };
+
+  console.log('calling useHeroRender with', { gameStatus, board, hero });
+  useHeroRender({ gameStatus, board, hero });
+
+  return hero;
+}
+
+export type UseHeroType = ReturnType<typeof useHero>;

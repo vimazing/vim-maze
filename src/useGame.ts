@@ -1,7 +1,7 @@
 import type { GameManager, GameOptions } from './types';
 import { useBoard } from './useBoard';
 import { useCursor } from './useCursor';
-import { useHeroRender } from './useHero';
+import { useHero } from './useHero';
 import { useKeyBindings } from './useKeyBindings';
 import { useGameStatus } from './useGameStatus';
 
@@ -14,7 +14,7 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
 
   const { gameStatus, startGame, togglePause, quitGame } = gameStatusManager;
 
-  useHeroRender({ gameStatus, board, cursor });
+  const hero = useHero(board, gameStatus);
   const keyManager = useKeyBindings({ cursor, gameStatus });
 
   const gameManager = {

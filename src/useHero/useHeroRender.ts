@@ -1,17 +1,18 @@
 import { useEffect } from "react";
-import type { BoardManager, Cursor, GameStatus } from "../types";
+import type { BoardManager, GameStatus } from "../types";
+import type { UseHeroType } from "./useHero";
 
 type UseHeroRenderParams = {
   gameStatus: GameStatus;
   board: BoardManager;
-  cursor: Cursor;
+  hero: UseHeroType;
   relative?: boolean;
 };
 
 export function useHeroRender(params: UseHeroRenderParams) {
-  const { gameStatus, board, cursor, relative = true } = params;
+  const { gameStatus, board, hero, relative = true } = params;
   const { containerRef } = board;
-  const playerPos = cursor.position();
+  const playerPos = hero.heroPos;
 
   const applyRelativeNumbers = (mazeDiv: HTMLElement, R: number, C: number) => {
     const rows = Number(mazeDiv.dataset.rows || 0);
@@ -48,7 +49,7 @@ export function useHeroRender(params: UseHeroRenderParams) {
     console.log('gameStatus', gameStatus);
     const container = containerRef.current;
     if (!['started', 'has-key'].includes(gameStatus)) return;
-    if (!container) return;
+    if (!container || !playerPos) return;
 
     const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
     if (!mazeDiv) return;
