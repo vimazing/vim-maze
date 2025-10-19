@@ -5,12 +5,10 @@ export const useKeyBindings = (gameManager: GameManager) => {
   const { gameStatus, startGame, quitGame, keyManager } = gameManager;
   const { clearLog } = keyManager;
 
-  console.log('gameStatus', gameStatus);
-
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const handler = (ev: KeyboardEvent) => {
       // start game
-      if (e.key === "i" || e.key === "I") {
+      if (ev.code === "Space") {
         if (["waiting", "game-over", "game-won"].includes(gameStatus)) {
           clearLog();
           if (gameStatus === "game-over" || gameStatus === "game-won") {
@@ -27,13 +25,13 @@ export const useKeyBindings = (gameManager: GameManager) => {
       if (gameStatus === "waiting") return;
 
       // cancel count or stop game
-      if (e.key === "Escape") {
+      if (ev.key === "Escape") {
         quitGame();
         return;
       }
 
       // quit
-      if (e.key === "q" || e.key === "Q") {
+      if (ev.key === "q" || ev.key === "Q") {
         quitGame();
         return;
       }

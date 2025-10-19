@@ -45,35 +45,35 @@ export const useKeyBindings = ({ cursor, gameStatus }: UseKeyBindingsParams) => 
   };
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const handler = (ev: KeyboardEvent) => {
       if (["waiting", "game-over", "game-won"].includes(gameStatus)) return;
 
       // "0" behaves like Vim: beginning of line
-      if (e.key === "0" && cursor.getCount() === "") {
+      if (ev.key === "0" && cursor.getCount() === "") {
         recordKey("0");
         cursor.resetCount();
         cursor.moveToStart();
         return;
       }
 
-      const isDigit = e.key >= "0" && e.key <= "9";
+      const isDigit = ev.key >= "0" && e.key <= "9";
       if (isDigit) {
-        if (e.key === "0" && cursor.getCount() === "") return;
-        recordKey(e.key);
-        cursor.setCount(e.key);
+        if (ev.key === "0" && cursor.getCount() === "") return;
+        recordKey(ev.key);
+        cursor.setCount(ev.key);
         return;
       }
 
-      if (e.key === ".") {
+      if (ev.key === ".") {
         recordKey(".");
         cursor.repeatLastMotion();
         return;
       }
 
-      if (e.key === "^" || e.key === "$") {
+      if (ev.key === "^" || ev.key === "$") {
         recordKey(e.key);
         cursor.resetCount();
-        if (e.key === "^") {
+        if (ev.key === "^") {
           cursor.moveToStart();
         } else {
           cursor.moveToEnd();
@@ -81,21 +81,21 @@ export const useKeyBindings = ({ cursor, gameStatus }: UseKeyBindingsParams) => 
         return;
       }
 
-      if (e.key === "g" || e.key === "G") {
-        if (e.key === "g") {
+      if (ev.key === "g" || ev.key === "G") {
+        if (ev.key === "g") {
           if (cursor.getLastKey() === "g") {
-            recordKey(e.key);
+            recordKey(ev.key);
             cursor.resetCount();
             cursor.setLastKey("");
             cursor.moveToTop();
             return;
           } else {
-            recordKey(e.key);
+            recordKey(ev.key);
             cursor.setLastKey("g");
             return;
           }
         } else {
-          recordKey(e.key);
+          recordKey(ev.key);
           cursor.resetCount();
           cursor.setLastKey("");
           cursor.moveToBottom();
@@ -103,14 +103,14 @@ export const useKeyBindings = ({ cursor, gameStatus }: UseKeyBindingsParams) => 
         }
       }
 
-      if (!RELEVANT_KEYS.has(e.key)) return;
+      if (!RELEVANT_KEYS.has(ev.key)) return;
 
-      recordKey(e.key);
+      recordKey(ev.key);
 
       const count = Math.max(1, parseInt(cursor.getCount() || "1", 10));
       cursor.resetCount();
 
-      switch (e.key) {
+      switch (ev.key) {
         case "h":
         case "H": cursor.moveLeft(count); break;
         case "j":
