@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import type { GameStatus, BoardManager, Coord } from '../types';
 
 export function useGameStatus(board?: BoardManager, setHeroPos?: (pos: Coord) => void) {
   const [gameStatus, setGameStatus] = useState<GameStatus>('waiting');
 
-  const startGame = useCallback(() => {
+  function startGame() {
     if (board && setHeroPos) {
       const m = board.mazeRef.current;
       if (!m.length) return;
@@ -17,7 +17,7 @@ export function useGameStatus(board?: BoardManager, setHeroPos?: (pos: Coord) =>
       }
     }
     setGameStatus('started');
-  }, [board, setHeroPos]);
+  }
 
   function togglePause(pause?: boolean) {
     if (typeof pause === 'boolean') {

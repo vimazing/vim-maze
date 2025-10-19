@@ -10,7 +10,7 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
   const { containerRef, renderBoard } = board;
   const gameStatusManager = useGameStatus();
 
-const { gameStatus, startGame, togglePause, quitGame, setGameStatus } = gameStatusManager;
+  const { gameStatus, startGame, togglePause, quitGame, setGameStatus } = gameStatusManager;
 
   const cursor = useCursor(board, gameStatus);
 
