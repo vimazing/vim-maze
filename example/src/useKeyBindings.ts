@@ -25,12 +25,6 @@ export const useKeyBindings = (gameManager: GameManager) => {
       // ignore other keys while waiting
       if (gameStatus === "waiting") return;
 
-      // cancel count or stop game
-      if (ev.key === "Escape") {
-        quitGame();
-        return;
-      }
-
       // quit
       if (ev.key === "q" || ev.key === "Q") {
         quitGame();

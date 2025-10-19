@@ -229,12 +229,12 @@ export class MazeGenerator {
       });
     });
 
-    return [fr, fc];
+    return { row: fr, col: fc };
   }
 
   placeKey(): void {
-    const [fr, fc] = this.getKeyLocation();
-    this.maze[fr][fc] = ["key"];
+    const keyLocation = this.getKeyLocation();
+    this.maze[keyLocation.row][keyLocation.col] = ["key"];
   }
 
   shortestPath(
@@ -250,14 +250,14 @@ export class MazeGenerator {
     } else {
       for (let r = 0; r < this.rows; r++) {
         for (let c = 0; c < this.cols; c++) {
-          if (this.maze[r][c].includes(fromTag)) start = [r, c];
+          if (this.maze[r][c].includes(fromTag)) start = { row: r, col: c };
         }
       }
     }
 
     for (let r = 0; r < this.rows; r++) {
       for (let c = 0; c < this.cols; c++) {
-        if (this.maze[r][c].includes(toTag)) end = [r, c];
+        if (this.maze[r][c].includes(toTag)) end = { row: r, col: c };
       }
     }
 
@@ -265,39 +265,41 @@ export class MazeGenerator {
 
     const visited = this.initArray<boolean>(false);
     const prev = this.initArray<Coord | null>(null);
-    const queue: Coord[] = [[...start]];
-    visited[start[0]][start[1]] = true;
+    const queue: Coord[] = [start];
+    visited[start.row][start.col] = true;
 
     const dirs: Coord[] = [
-      [-1, 0],
-      [1, 0],
-      [0, -1],
-      [0, 1],
+      { row: -1, col: 0 },
+      { row: 1, col: 0 },
+      { row: 0, col: -1 },
+      { row: 0, col: 1 },
     ];
 
     while (queue.length > 0) {
-      const [r, c] = queue.shift() as Coord;
+      const current = queue.shift()!;
+      const r = current.row;
+      const c = current.col;
 
-      if (r === end[0] && c === end[1]) {
+      if (r === end.row && c === end.col) {
         const path: Coord[] = [];
         let curr: Coord | null = end;
         while (curr) {
           path.unshift(curr);
-          curr = prev[curr[0]][curr[1]];
+          curr = prev[curr.row][curr.col];
         }
         return path;
       }
 
-      for (const [dr, dc] of dirs) {
-        const nr = r + dr,
-          nc = c + dc;
+      for (const dir of dirs) {
+        const nr = r + dir.row,
+          nc = c + dir.col;
         if (!this.inBounds(nr, nc)) continue;
         if (visited[nr][nc]) continue;
         if (this.maze[nr][nc].includes("wall")) continue;
 
         visited[nr][nc] = true;
-        prev[nr][nc] = [r, c];
-        queue.push([nr, nc]);
+        prev[nr][nc] = { row: r, col: c };
+        queue.push({ row: nr, col: nc });
       }
     }
 

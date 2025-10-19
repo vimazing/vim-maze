@@ -69,6 +69,12 @@ export type GameStatusManager = {
 
 //Cursor Stuff
 export type CursorMode = 'normal' | 'insert' | 'replace' | 'visual' | 'visual-line';
+export type UseHeroType = {
+  heroPos: Coord | null;
+  setHeroPos: (pos: Coord | null) => void;
+  moveHero: (dr: number, dc: number, steps: number, gameStatus: GameStatus, setGameStatus: (s: GameStatus) => void) => void;
+};
+
 export type Cursor = { //return type of useCursor (currently useHero)
   position: () => Coord;
   mode: () => CursorMode;
@@ -87,4 +93,5 @@ export type Cursor = { //return type of useCursor (currently useHero)
   setCount: (digit: string) => void;
   setLastKey: (key: string) => void;
   getLastKey: () => string;
+  hero?: UseHeroType;
 }

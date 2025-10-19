@@ -8,29 +8,6 @@ export function useHero(board: BoardManager, gameStatus: GameStatus) {
 
   const animatingRef = useRef(false);
 
-  useEffect(() => {
-    if (gameStatus === 'started' && !heroPos) {
-      const m = mazeRef.current;
-      if (!m.length) return;
-
-      for (let c = 0; c < m[0].length; c++) {
-        if (m[m.length - 1][c].includes("entrance")) {
-          setHeroPos({ row: m.length - 1, col: c });
-          break;
-        }
-      }
-    }
-  }, [gameStatus, heroPos, mazeRef]);
-
-  useEffect(() => {
-    if (gameStatus === 'waiting' || gameStatus === 'game-over' || gameStatus === 'game-won') {
-      setHeroPos(null);
-      const container = containerRef.current;
-      container?.querySelector("#maze")?.classList.remove("finished");
-      container?.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
-    }
-  }, [gameStatus, containerRef]);
-
   const getCellEl = useCallback((r: number, c: number): HTMLElement | null => {
     const container = containerRef.current;
     if (!container) return null;
@@ -60,6 +37,29 @@ export function useHero(board: BoardManager, gameStatus: GameStatus) {
     window.addEventListener("maze-invalid", onInvalid);
     return () => window.removeEventListener("maze-invalid", onInvalid);
   }, [flashInvalid]);
+
+  useEffect(() => {
+    if (gameStatus === 'started' && !heroPos) {
+      const m = mazeRef.current;
+      if (!m.length) return;
+
+      for (let c = 0; c < m[0].length; c++) {
+        if (m[m.length - 1][c].includes("entrance")) {
+          setHeroPos({ row: m.length - 1, col: c });
+          break;
+        }
+      }
+    }
+  }, [gameStatus, heroPos, mazeRef]);
+
+  useEffect(() => {
+    if (gameStatus === 'waiting' || gameStatus === 'game-over' || gameStatus === 'game-won') {
+      setHeroPos(null);
+      const container = containerRef.current;
+      container?.querySelector("#maze")?.classList.remove("finished");
+      container?.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
+    }
+  }, [gameStatus, containerRef]);
 
   const moveHero = useCallback(
     (
@@ -204,7 +204,6 @@ export function useHero(board: BoardManager, gameStatus: GameStatus) {
     moveHero,
   };
 
-  console.log('calling useHeroRender with', { gameStatus, board, hero });
   useHeroRender({ gameStatus, board, hero });
 
   return hero;

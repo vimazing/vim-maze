@@ -1,14 +1,17 @@
 import { useRef } from 'react'
-import type { CursorMode, Coord, BoardManager } from '../types'
+import type { CursorMode, Coord, BoardManager, GameStatus } from '../types'
+import { useHero } from './useHero'
 
 type Motion = { dr: number; dc: number; steps: number };
 
-export function useCursor(board: BoardManager) {
+export function useCursor(board: BoardManager, gameStatus: GameStatus) {
   const position = useRef<Coord>({ row: 0, col: 0 })
   const mode = useRef<CursorMode>('normal')
   const countRef = useRef<string>("");
   const lastMotionRef = useRef<Motion | null>(null);
   const lastKeyRef = useRef<string>("");
+
+  const hero = useHero(board, gameStatus);
 
   function findAnchorTarget(dir: "left" | "right") {
     const m = board.mazeRef.current;
@@ -189,8 +192,8 @@ export function useCursor(board: BoardManager) {
     move(last.dc, last.dr, steps);
   }
 
-  function resetCount() { 
-    countRef.current = ""; 
+  function resetCount() {
+    countRef.current = "";
   }
 
   function getCount() {
@@ -209,7 +212,7 @@ export function useCursor(board: BoardManager) {
     return lastKeyRef.current;
   }
 
-  return {
+  const cursorAPI = {
     position: () => position.current,
     mode: () => mode.current,
     move,
@@ -228,5 +231,7 @@ export function useCursor(board: BoardManager) {
     setLastKey,
     getLastKey,
   }
+
+  return cursorAPI;
 }
 
