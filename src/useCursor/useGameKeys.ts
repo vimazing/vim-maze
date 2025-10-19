@@ -112,7 +112,7 @@ export const useGameKeys = (props: UseGameKeysParams) => {
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [gameStatus]);
+  }, [gameStatus, cursor, hero]);
 
   return {
     keyLog,

@@ -39,7 +39,7 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
 
   function moveTo(coord: Coord): void {
     if (!heroPos || !canMoveTo(coord)) return;
-    if (gameStatus !== "started" && gameStatus !== "has-key") return;
+    // Note: gameStatus check will be done in moveHero
     if (animation.isAnimating()) return;
 
     const m = mazeRef.current;
@@ -114,6 +114,8 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
     currentSetGameStatus: (s: GameStatus) => void
   ) {
     if (!heroPos) return;
+    if (currentGameStatus !== "started" && currentGameStatus !== "has-key") return;
+    if (animation.isAnimating()) return;
     
     const n = Math.max(1, steps ?? 1);
     const targetCoord = {
@@ -125,9 +127,6 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
       window.dispatchEvent(new Event("maze-invalid"));
       return;
     }
-
-    if (currentGameStatus !== "started" && currentGameStatus !== "has-key") return;
-    if (animation.isAnimating()) return;
 
     const m = mazeRef.current;
     if (!m.length) return;
