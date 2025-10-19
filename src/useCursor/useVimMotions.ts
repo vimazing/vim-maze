@@ -1,15 +1,8 @@
 import { useRef } from 'react';
+import type { VimMotionSystem, Motion } from '../types';
 
-export type Motion = { dr: number; dc: number; steps: number };
-
-export type VimMotionSystem = {
-  processKey: (key: string) => { type: 'move'|'anchor'|'repeat'|'count', data: any } | null;
-  resetCount: () => void;
-  getCount: () => number;
-  hasCount: () => boolean;
-  setLastMotion: (motion: Motion) => void;
-  repeatLastMotion: () => Motion | null;
-};
+export type { Motion } from '../types';
+export type { VimMotionSystem } from '../types';
 
 export function useVimMotions(): VimMotionSystem {
   const countRef = useRef<string>('');
@@ -112,5 +105,3 @@ export function useVimMotions(): VimMotionSystem {
     repeatLastMotion
   };
 }
-
-export type VimMotionManager = ReturnType<typeof useVimMotions>;

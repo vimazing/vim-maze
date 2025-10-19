@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
-import type { UseTimerReturn } from "./useTimer";
-import type { GameStatus } from "../types";
+import type { TimerManager, GameStatus } from "../types";
 
 type UseScoreTimeParams = {
   gameStatus: GameStatus;
-  timer: UseTimerReturn;
+  timer: TimerManager;
 };
 
 export function useScoreTime({ gameStatus, timer }: UseScoreTimeParams) {

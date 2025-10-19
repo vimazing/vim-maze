@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import type { TimerManager } from '../types';
 
-export function useTimer() {
+export type { TimerManager } from '../types';
+
+export function useTimer(): TimerManager {
   const [timeValue, setTimeValue] = useState(0);
   const startTimeRef = useRef<number | null>(null);
   const frameRef = useRef<number | null>(null);
@@ -42,7 +45,5 @@ export function useTimer() {
     };
   }, []);
 
-  return { timeValue, startTimer, stopTimer, resetTimer };
+   return { timeValue, startTimer, stopTimer, resetTimer };
 }
-
-export type UseTimerReturn = ReturnType<typeof useTimer>;

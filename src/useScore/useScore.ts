@@ -118,18 +118,16 @@ export function useScore({ board, hero, gameStatusManager, keyManager }: UseScor
     setFinalScore(score);
   }, [gameStatus, logicFirst, logicLast, timeValue, optimalSteps]);
 
-  return {
-    timeValue,
-    startTimer,
-    stopTimer,
-    resetTimer,
-    distToKey,
-    distToExit,
-    keystrokes,
-    optimalSteps,
-    efficiency,
-    finalScore,
-  };
+   return {
+     timeValue,
+     startTimer,
+     stopTimer,
+     resetTimer,
+     distToKey,
+     distToExit,
+     keystrokes,
+     optimalSteps,
+     efficiency,
+     finalScore,
+   };
 }
-
-export type ScoreManager = ReturnType<typeof useScore>;

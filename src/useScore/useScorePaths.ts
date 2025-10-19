@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import type { BoardManager } from "../types";
+import type { BoardManager, Coord, ScorePathsResult } from "../types";
+
+export type { ScorePathsResult } from "../types";
 
 type UseScorePathsParams = {
   board: BoardManager;
-  heroPos: { row: number; col: number } | null;
+  heroPos: Coord | null;
 };
 
-export function useScorePaths({ board, heroPos }: UseScorePathsParams) {
+export function useScorePaths({ board, heroPos }: UseScorePathsParams): ScorePathsResult {
   const { mazeInstanceRef } = board;
 
   const [distances, setDistances] = useState({
@@ -38,7 +40,5 @@ export function useScorePaths({ board, heroPos }: UseScorePathsParams) {
     }));
   }, [heroPos, mazeInstanceRef]);
 
-  return distances;
+   return distances;
 }
-
-export type UseScorePathsReturn = ReturnType<typeof useScorePaths>;

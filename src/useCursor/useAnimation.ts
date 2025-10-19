@@ -1,11 +1,7 @@
 import { useRef } from 'react';
-import type { Coord } from '../types';
+import type { Coord, AnimationSystem } from '../types';
 
-export type AnimationSystem = {
-  animateMovement: (from: Coord, to: Coord, steps: number, onStep: (coord: Coord) => void, onComplete: () => void) => void;
-  cancelAnimation: () => void;
-  isAnimating: () => boolean;
-};
+export type { AnimationSystem } from '../types';
 
 export function useAnimation(): AnimationSystem {
   const animatingRef = useRef(false);
@@ -89,5 +85,3 @@ export function useAnimation(): AnimationSystem {
     isAnimating
   };
 }
-
-export type AnimationManager = ReturnType<typeof useAnimation>;

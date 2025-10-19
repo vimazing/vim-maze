@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import type { BoardManager, GameStatusManager, GameStatus, Coord } from "../types";
+import type { BoardManager, GameStatusManager, GameStatus, Coord, UseHeroType } from "../types";
 import { useHeroRender } from "./useHeroRender";
 import { useMazeNavigation } from "../useBoard";
 import { useAnimation } from "./useAnimation";
 
-export function useHero(board: BoardManager, gameStatusManager: GameStatusManager) {
+export function useHero(board: BoardManager, gameStatusManager: GameStatusManager): UseHeroType {
   const { mazeRef } = board;
   const [heroPos, setHeroPos] = useState<Coord | null>(null);
   const { gameStatus, setGameStatus } = gameStatusManager;
@@ -185,7 +185,5 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
 
   useHeroRender({ gameStatus, board, hero });
 
-  return hero;
+   return hero;
 }
-
-export type UseHeroType = ReturnType<typeof useHero>;

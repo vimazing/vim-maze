@@ -1,10 +1,6 @@
-import type { Coord, MazeCell } from '../types';
+import type { Coord, MazeCell, MazeNavigator } from '../types';
 
-export type MazeNavigator = {
-  isValidMove: (from: Coord, to: Coord) => boolean;
-  findAnchorTarget: (from: Coord, direction: 'left'|'right'|'top'|'bottom') => Coord | null;
-  validatePath: (from: Coord, direction: Coord, steps: number) => boolean;
-};
+export type { MazeNavigator } from '../types';
 
 export function useMazeNavigation(maze: MazeCell[][]): MazeNavigator {
   function isValidMove(_from: Coord, to: Coord): boolean {
@@ -81,11 +77,9 @@ export function useMazeNavigation(maze: MazeCell[][]): MazeNavigator {
      return true;
    }
 
-  return {
-    isValidMove,
-    findAnchorTarget,
-    validatePath
-  };
+   return {
+     isValidMove,
+     findAnchorTarget,
+     validatePath
+   };
 }
-
-export type MazeNavigationManager = ReturnType<typeof useMazeNavigation>;

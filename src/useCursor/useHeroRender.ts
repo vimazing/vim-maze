@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import type { BoardManager, GameStatus, Coord } from "../types";
-import type { UseHeroType } from "./useHero";
+import type { BoardManager, GameStatus, Coord, UseHeroType, HeroRenderManager } from "../types";
+
+export type { HeroRenderManager } from "../types";
 
 type UseHeroRenderParams = {
   gameStatus: GameStatus;
@@ -9,7 +10,7 @@ type UseHeroRenderParams = {
   relative?: boolean;
 };
 
-export function useHeroRender(params: UseHeroRenderParams) {
+export function useHeroRender(params: UseHeroRenderParams): HeroRenderManager {
   const { gameStatus, board, hero, relative = true } = params;
   const { containerRef } = board;
   const playerPos = hero.heroPos;
@@ -157,11 +158,9 @@ export function useHeroRender(params: UseHeroRenderParams) {
     };
   }, [playerPos, containerRef]);
 
-  return {
-    render,
-    updatePosition,
-    showCoordinates
-  };
+   return {
+     render,
+     updatePosition,
+     showCoordinates
+   };
 }
-
-export type UseHeroRenderType = ReturnType<typeof useHeroRender>;
