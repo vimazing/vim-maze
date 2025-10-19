@@ -70,7 +70,7 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
   ) {
     const m = mazeRef.current;
     if (!heroPos || !m.length) return;
-    if (gameStatus !== "started" && gameStatus !== "hasKey") return;
+    if (gameStatus !== "started" && gameStatus !== "has-key") return;
     if (animatingRef.current) return;
 
     const n = Math.max(1, steps ?? 1);
@@ -88,7 +88,7 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
         valid = false;
         break;
       }
-      if (m[r][c].includes("exit") && gameStatus !== "hasKey") {
+      if (m[r][c].includes("exit") && gameStatus !== "has-key") {
         valid = false;
         break;
       }
@@ -141,7 +141,7 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
           rafId = requestAnimationFrame(tick);
         } else {
           if (m[rNow][cNow].includes("key")) {
-            setGameStatus("hasKey");
+            setGameStatus("has-key");
             m[rNow][cNow] = [];
             const container = containerRef.current;
             const mazeDiv = container?.querySelector("#maze");
@@ -173,13 +173,13 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
       flashInvalid();
       return;
     }
-    if (m[newR][newC].includes("exit") && gameStatus !== "hasKey") {
+    if (m[newR][newC].includes("exit") && gameStatus !== "has-key") {
       flashInvalid();
       return;
     }
 
     if (m[newR][newC].includes("key")) {
-      setGameStatus("hasKey");
+      setGameStatus("has-key");
       m[newR][newC] = [];
       const container = containerRef.current;
       const mazeDiv = container?.querySelector("#maze");

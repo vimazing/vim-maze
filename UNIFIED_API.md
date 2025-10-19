@@ -50,7 +50,7 @@ type GameManager = {
 
 ### `GameStatus`
 ```tsx
-type GameStatus = 'waiting' | 'started' | 'hasKey' | 'paused' | 'game-over' | 'game-won'
+type GameStatus = 'waiting' | 'started' | 'has-key' | 'paused' | 'game-over' | 'game-won'
 ```
 
 ### `Cursor`

@@ -4,7 +4,7 @@ export * from './useGame';
 export * from './useBoard';
 export * from './useCursor';
 
-export type GameStatus = 'waiting' | 'started' | 'hasKey' | 'paused' | 'game-over' | 'game-won'
+export type GameStatus = 'waiting' | 'started' | 'has-key' | 'paused' | 'game-over' | 'game-won'
 
 export type GameManager = {
   containerRef: RefObject<HTMLDivElement | null>;
