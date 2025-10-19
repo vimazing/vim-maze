@@ -1,8 +1,10 @@
 import type { RefObject } from 'react';
 import { MazeRenderer, MazeGenerator } from "./useBoard";
+import type { ScoreManager } from './useScore';
 export * from './useGame';
 export * from './useBoard';
 export * from './useCursor';
+export * from './useScore';
 
 export type GameStatus = 'waiting' | 'started' | 'has-key' | 'paused' | 'game-over' | 'game-won'
 
@@ -12,6 +14,7 @@ export type GameManager = {
   cursor: CursorManager;
   hero: HeroManager;
   renderer: HeroRenderer;
+  scoreManager: ScoreManager;
 } & GameStatusManager & GameKeyManager;
 
 
