@@ -1,8 +1,8 @@
-import { useGame } from "@vimazing/vim-maze";
+import { useGame } from "../../src/useGame";
 import { useKeyBindings } from "./useKeyBindings";
 import { useMounted } from "./useMounted";
 import { useIsMobile } from "./useIsMobile";
-import { GameOverlay } from "./GameOverlay";
+import '../../src/game.css';
 
 function App() {
   const isMobile = useIsMobile();
@@ -10,13 +10,12 @@ function App() {
   const cols = isMobile ? 12 : 32;
   const rows = isMobile ? 8 : 24;
 
-  const gameManager = useGame(cols, rows, useKeyBindings);
-  const { containerRef, gameStatus, scoreManager } = gameManager;
+  const gameManager = useGame({ cols, rows }, useKeyBindings);
+  const { containerRef, gameStatus } = gameManager;
 
   return (
     <div className="relative mx-auto my-4 w-fit" id="maze_container">
       <div ref={containerRef} className="relative" />
-      {mounted && <GameOverlay gameStatus={gameStatus} scoreManager={scoreManager} />}
     </div>
   );
 };

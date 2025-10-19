@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    /* === Environment === */
     "target": "ESNext",
     "lib": ["ESNext", "DOM"],
     "jsx": "react-jsx",
@@ -8,14 +7,12 @@
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
 
-    /* === Bundler / Vite === */
     "noEmit": true,
     "allowJs": true,
     "skipLibCheck": true,
     "isolatedModules": true,
     "types": ["vite/client"],
 
-    /* === Code Style & Safety === */
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
@@ -23,12 +20,10 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
 
-    /* === Module Behavior === */
     "allowImportingTsExtensions": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 
-    /* === Path aliases (optional) === */
     "baseUrl": ".",
     "paths": {
       "@vimazing/vim-maze": ["../dist/index.d.ts"],
