@@ -44,7 +44,9 @@ type GameOptions = {
 type GameManager = {
   containerRef: RefObject<HTMLDivElement | null>;
   renderBoard: () => void;
-  cursor: Cursor;
+  cursor: CursorManager;
+  hero: HeroManager;
+  renderer: HeroRenderer;
 } & GameStatusManager & GameKeyManager;
 ```
 
@@ -53,9 +55,9 @@ type GameManager = {
 type GameStatus = 'waiting' | 'started' | 'has-key' | 'paused' | 'game-over' | 'game-won'
 ```
 
-### `Cursor`
+### `CursorManager`
 ```tsx
-type Cursor = {
+type CursorManager = {
   position: () => Coord;
   mode: () => CursorMode;
   move: (dCols: number, dRows: number, count: number) => void;
@@ -63,7 +65,58 @@ type Cursor = {
   moveRight: (count?: number) => void;
   moveUp: (count?: number) => void;
   moveDown: (count?: number) => void;
+  moveToStart: () => void;
+  moveToEnd: () => void;
+  moveToTop: () => void;
+  moveToBottom: () => void;
+  repeatLastMotion: () => void;
+  resetCount: () => void;
+  getCount: () => string;
+  setCount: (digit: string) => void;
+  setLastKey: (key: string) => void;
+  getLastKey: () => string;
+  hero?: UseHeroType;
 }
+```
+
+### `HeroManager`
+```tsx
+type HeroManager = {
+  position: Coord | null;
+  canMoveTo: (coord: Coord) => boolean;
+  moveTo: (coord: Coord) => void;
+  pickupKey: () => void;
+  reachExit: () => void;
+  reset: () => void;
+}
+```
+
+### `HeroRenderer`
+```tsx
+type HeroRenderer = {
+  render: () => void;
+  updatePosition: (coord: Coord) => void;
+  showCoordinates: (show: boolean) => void;
+}
+```
+
+### `UseHeroType`
+```tsx
+type UseHeroType = {
+  heroPos: Coord | null;
+  setHeroPos: (pos: Coord | null) => void;
+  moveHero: (dr: number, dc: number, steps: number, gameStatus: GameStatus, setGameStatus: (s: GameStatus) => void) => void;
+  canMoveTo: (coord: Coord) => boolean;
+  moveTo: (coord: Coord) => void;
+  pickupKey: () => void;
+  reachExit: () => void;
+  reset: () => void;
+}
+```
+
+### `Cursor` (Legacy)
+```tsx
+type Cursor = CursorManager; // For backward compatibility
 ```
 
 ### `CursorMode`
@@ -264,8 +317,32 @@ The unified API is designed to accommodate:
 - ✅ **useGame implementation** - Complete (with flattened GameManager interface)
 - ✅ **React 19 optimization** - No useCallback/useMemo usage
 - ✅ **API refactoring** - Complete (key management moved into cursor module)
-- ⏳ **Platform integration** - Pending
+- ✅ **Architecture refactoring** - Complete (separation of concerns implemented)
+- ✅ **Specialized hooks** - Complete (useMazeNavigation, useVimMotions, useAnimation)
+- ✅ **Single source of truth** - Complete (hero position as authoritative)
+- ✅ **React-first architecture** - Complete (state-driven rendering)
+- ✅ **Platform integration** - Ready
 - ⏳ **Advanced features** - Pending (scoring, animations, etc.)
+
+## Recent Architecture Changes
+
+### Separation of Concerns (Phase 1-3 Complete)
+- **useMazeNavigation**: Pure maze geometry and path validation
+- **useVimMotions**: Pure Vim-style input parsing
+- **useAnimation**: Pure movement animation system
+- **useCursor**: Input coordination and cursor state
+- **useHero**: Pure game logic and state management
+- **useHeroRender**: Pure visual presentation layer
+
+### Single Source of Truth
+- Hero position is now the authoritative game state
+- Cursor position is derived from hero position
+- All rendering is driven by state changes
+
+### Communication Patterns
+- Global events replaced with callback props and return values
+- Direct DOM manipulation moved to render layer
+- State-driven rendering instead of imperative updates
 
 ## Usage Examples
 
@@ -426,7 +503,9 @@ Platform hooks receive the complete `GameManager` interface:
 type GameManager = {
   containerRef: RefObject<HTMLDivElement | null>;
   renderBoard: () => void;
-  cursor: Cursor;
+  cursor: CursorManager;
+  hero: HeroManager;
+  renderer: HeroRenderer;
 } & GameStatusManager & GameKeyManager;
 ```
 

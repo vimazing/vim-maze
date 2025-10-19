@@ -1,42 +1,16 @@
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { BoardManager, GameStatusManager, GameStatus, Coord } from "../types";
 import { useHeroRender } from "./useHeroRender";
+import { useMazeNavigation } from "../useBoard";
+import { useAnimation } from "./useAnimation";
 
 export function useHero(board: BoardManager, gameStatusManager: GameStatusManager) {
-  const { mazeRef, containerRef } = board;
+  const { mazeRef } = board;
   const [heroPos, setHeroPos] = useState<Coord | null>(null);
-  const animatingRef = useRef(false);
-  const { gameStatus } = gameStatusManager;
-
-  function getCellEl(r: number, c: number): HTMLElement | null {
-    const container = containerRef.current;
-    if (!container) return null;
-    const mazeDiv = container.querySelector("#maze");
-    if (!mazeDiv) return null;
-    const selector = `.maze-row > div[data-r="${r}"][data-c="${c}"]`;
-    return mazeDiv.querySelector(selector) as HTMLElement | null;
-  }
-
-  function leaveTrail(r: number, c: number) {
-    const el = getCellEl(r, c);
-    if (!el) return;
-    el.classList.add("trail");
-    setTimeout(() => el.classList.remove("trail"), 220);
-  }
-
-  function flashInvalid() {
-    if (!heroPos) return;
-    const el = getCellEl(heroPos.row, heroPos.col);
-    if (!el) return;
-    el.classList.add("invalid-move");
-    setTimeout(() => el.classList.remove("invalid-move"), 180);
-  }
-
-  useEffect(() => {
-    const onInvalid = () => flashInvalid();
-    window.addEventListener("maze-invalid", onInvalid);
-    return () => window.removeEventListener("maze-invalid", onInvalid);
-  }, []);
+  const { gameStatus, setGameStatus } = gameStatusManager;
+  
+  const navigator = useMazeNavigation(mazeRef.current);
+  const animation = useAnimation();
 
   useEffect(() => {
     if (gameStatus === 'started' && !heroPos) {
@@ -55,147 +29,156 @@ export function useHero(board: BoardManager, gameStatusManager: GameStatusManage
   useEffect(() => {
     if (gameStatus === 'waiting' || gameStatus === 'game-over' || gameStatus === 'game-won') {
       setHeroPos(null);
-      const container = containerRef.current;
-      container?.querySelector("#maze")?.classList.remove("finished");
-      container?.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
     }
-  }, [gameStatus, containerRef]);
+  }, [gameStatus]);
+
+  function canMoveTo(coord: Coord): boolean {
+    if (!heroPos) return false;
+    return navigator.isValidMove(heroPos, coord);
+  }
+
+  function moveTo(coord: Coord): void {
+    if (!heroPos || !canMoveTo(coord)) return;
+    if (gameStatus !== "started" && gameStatus !== "has-key") return;
+    if (animation.isAnimating()) return;
+
+    const m = mazeRef.current;
+    if (!m.length) return;
+
+    if (m[coord.row][coord.col].includes("exit") && gameStatus !== "has-key") {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+
+    const steps = Math.abs(coord.row - heroPos.row) + Math.abs(coord.col - heroPos.col);
+
+    if (steps > 1) {
+      animation.animateMovement(
+        heroPos,
+        coord,
+        steps,
+        (stepCoord) => {
+          setHeroPos(stepCoord);
+          window.dispatchEvent(new CustomEvent("maze-logic-tick", { detail: { t: performance.now() } }));
+        },
+        () => {
+          setHeroPos(coord);
+          handleCellInteraction(coord);
+        }
+      );
+    } else {
+      setHeroPos(coord);
+      handleCellInteraction(coord);
+    }
+  }
+
+  function handleCellInteraction(coord: Coord): void {
+    const m = mazeRef.current;
+    if (!m.length) return;
+
+    if (m[coord.row][coord.col].includes("key")) {
+      setGameStatus("has-key");
+      m[coord.row][coord.col] = [];
+      window.dispatchEvent(new CustomEvent("maze-key-picked", { detail: coord }));
+    }
+    if (m[coord.row][coord.col].includes("exit")) {
+      setGameStatus("game-won");
+    }
+  }
+
+  function pickupKey(): void {
+    if (!heroPos) return;
+    handleCellInteraction(heroPos);
+  }
+
+  function reachExit(): void {
+    if (!heroPos) return;
+    const m = mazeRef.current;
+    if (!m.length) return;
+    
+    if (m[heroPos.row][heroPos.col].includes("exit") && gameStatus === "has-key") {
+      setGameStatus("game-won");
+    }
+  }
+
+  function reset(): void {
+    setHeroPos(null);
+    animation.cancelAnimation();
+  }
 
   function moveHero(
     dr: number,
     dc: number,
     steps: number | undefined,
-    gameStatus: GameStatus,
-    setGameStatus: (s: GameStatus) => void
+    currentGameStatus: GameStatus,
+    currentSetGameStatus: (s: GameStatus) => void
   ) {
-    const m = mazeRef.current;
-    if (!heroPos || !m.length) return;
-    if (gameStatus !== "started" && gameStatus !== "has-key") return;
-    if (animatingRef.current) return;
-
+    if (!heroPos) return;
+    
     const n = Math.max(1, steps ?? 1);
+    const targetCoord = {
+      row: heroPos.row + dr * n,
+      col: heroPos.col + dc * n
+    };
 
-    const r0 = heroPos.row;
-    const c0 = heroPos.col;
-    let r = r0;
-    let c = c0;
-    let valid = true;
-
-    for (let i = 1; i <= n; i++) {
-      r += dr;
-      c += dc;
-      if (!m[r] || !m[r][c] || m[r][c].includes("wall")) {
-        valid = false;
-        break;
-      }
-      if (m[r][c].includes("exit") && gameStatus !== "has-key") {
-        valid = false;
-        break;
-      }
+    if (!navigator.validatePath(heroPos, { row: dr, col: dc }, n)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
     }
-    if (!valid) {
-      flashInvalid();
+
+    if (currentGameStatus !== "started" && currentGameStatus !== "has-key") return;
+    if (animation.isAnimating()) return;
+
+    const m = mazeRef.current;
+    if (!m.length) return;
+
+    if (m[targetCoord.row][targetCoord.col].includes("exit") && currentGameStatus !== "has-key") {
+      window.dispatchEvent(new Event("maze-invalid"));
       return;
     }
 
     if (n > 1) {
-      animatingRef.current = true;
-
-      let i = 0;
-      let rNow = r0;
-      let cNow = c0;
-      let cancelled = false;
-      let rafId: number | null = null;
-
-      const TOTAL_MS = 64;
-      const framesTarget = Math.max(1, Math.round(TOTAL_MS / 16));
-      const stepsPerFrame = Math.max(1, Math.ceil(n / framesTarget));
-
-      const cancel = () => {
-        cancelled = true;
-        if (rafId !== null) cancelAnimationFrame(rafId);
-        window.removeEventListener("keydown", onEsc);
-        animatingRef.current = false;
-      };
-      const onEsc = (ev: KeyboardEvent) => {
-        if (ev.key === "Escape") cancel();
-      };
-      window.addEventListener("keydown", onEsc);
-
-      const tick = () => {
-        if (cancelled) return;
-
-        let processed = 0;
-        while (processed < stepsPerFrame && i < n) {
-          i += 1;
-          rNow += dr;
-          cNow += dc;
-          leaveTrail(rNow, cNow);
-          processed += 1;
+      animation.animateMovement(
+        heroPos,
+        targetCoord,
+        n,
+        (stepCoord) => {
+          setHeroPos(stepCoord);
+          window.dispatchEvent(new CustomEvent("maze-logic-tick", { detail: { t: performance.now() } }));
+        },
+        () => {
+          setHeroPos(targetCoord);
+          handleCellInteractionForStatus(targetCoord, currentSetGameStatus);
         }
-
-        setHeroPos({ row: rNow, col: cNow });
-        window.dispatchEvent(new CustomEvent("maze-logic-tick", { detail: { t: performance.now() } }));
-
-        if (i < n) {
-          rafId = requestAnimationFrame(tick);
-        } else {
-          if (m[rNow][cNow].includes("key")) {
-            setGameStatus("has-key");
-            m[rNow][cNow] = [];
-            const container = containerRef.current;
-            const mazeDiv = container?.querySelector("#maze");
-            const keyCell = mazeDiv?.querySelector<HTMLElement>(
-              `.maze-row > div[data-r="${rNow}"][data-c="${cNow}"]`
-            );
-            keyCell?.classList.remove("key");
-          }
-          if (m[rNow][cNow].includes("exit")) {
-            setGameStatus("game-won");
-          }
-          window.removeEventListener("keydown", onEsc);
-          animatingRef.current = false;
-        }
-      };
-
-      rafId = requestAnimationFrame(tick);
-      return;
-    }
-
-    const newR = r0 + dr;
-    const newC = c0 + dc;
-
-    if (!m[newR] || !m[newR][newC]) {
-      flashInvalid();
-      return;
-    }
-    if (m[newR][newC].includes("wall")) {
-      flashInvalid();
-      return;
-    }
-    if (m[newR][newC].includes("exit") && gameStatus !== "has-key") {
-      flashInvalid();
-      return;
-    }
-
-    if (m[newR][newC].includes("key")) {
-      setGameStatus("has-key");
-      m[newR][newC] = [];
-      const container = containerRef.current;
-      const mazeDiv = container?.querySelector("#maze");
-      const cell = mazeDiv?.querySelector<HTMLElement>(
-        `.maze-row > div[data-r="${newR}"][data-c="${newC}"]`
       );
-      cell?.classList.remove("key");
+    } else {
+      setHeroPos(targetCoord);
+      handleCellInteractionForStatus(targetCoord, currentSetGameStatus);
     }
-    if (m[newR][newC].includes("exit")) {
-      setGameStatus("game-won");
-    }
+  }
 
-    setHeroPos({ row: newR, col: newC });
+  function handleCellInteractionForStatus(coord: Coord, currentSetGameStatus: (s: GameStatus) => void): void {
+    const m = mazeRef.current;
+    if (!m.length) return;
+
+    if (m[coord.row][coord.col].includes("key")) {
+      currentSetGameStatus("has-key");
+      m[coord.row][coord.col] = [];
+      window.dispatchEvent(new CustomEvent("maze-key-picked", { detail: coord }));
+    }
+    if (m[coord.row][coord.col].includes("exit")) {
+      currentSetGameStatus("game-won");
+    }
   }
 
   const hero = {
+    position: heroPos,
+    canMoveTo,
+    moveTo,
+    pickupKey,
+    reachExit,
+    reset,
+    // Legacy properties for backward compatibility
     heroPos,
     setHeroPos,
     moveHero,

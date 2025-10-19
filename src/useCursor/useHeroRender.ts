@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { BoardManager, GameStatus } from "../types";
+import type { BoardManager, GameStatus, Coord } from "../types";
 import type { UseHeroType } from "./useHero";
 
 type UseHeroRenderParams = {
@@ -13,6 +13,56 @@ export function useHeroRender(params: UseHeroRenderParams) {
   const { gameStatus, board, hero, relative = true } = params;
   const { containerRef } = board;
   const playerPos = hero.heroPos;
+
+  function render(): void {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
+    if (!mazeDiv) return;
+
+    mazeDiv.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
+
+    if (playerPos) {
+      const selector = `.maze-row > div[data-r="${playerPos.row}"][data-c="${playerPos.col}"]`;
+      const cell = mazeDiv.querySelector(selector) as HTMLElement | null;
+      if (cell) cell.classList.add("hero");
+    }
+  }
+
+  function updatePosition(coord: Coord): void {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
+    if (!mazeDiv) return;
+
+    mazeDiv.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
+
+    const selector = `.maze-row > div[data-r="${coord.row}"][data-c="${coord.col}"]`;
+    const cell = mazeDiv.querySelector(selector) as HTMLElement | null;
+    if (cell) cell.classList.add("hero");
+  }
+
+  function showCoordinates(show: boolean): void {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
+    if (!mazeDiv) return;
+
+    if (show && playerPos) {
+      mazeDiv.dataset.rows = String(mazeDiv.querySelectorAll(".maze-row").length);
+      mazeDiv.dataset.cols = String(
+        mazeDiv
+          .querySelector(".maze-row > div[data-r][data-c]")
+          ?.parentElement?.querySelectorAll(':scope > div[data-r][data-c]').length || 0
+      );
+      applyRelativeNumbers(mazeDiv, playerPos.row, playerPos.col);
+    } else {
+      mazeDiv.classList.remove("is-relative");
+    }
+  }
 
   const applyRelativeNumbers = (mazeDiv: HTMLElement, R: number, C: number) => {
     const rows = Number(mazeDiv.dataset.rows || 0);
@@ -46,30 +96,72 @@ export function useHeroRender(params: UseHeroRenderParams) {
   };
 
   useEffect(() => {
-    console.log('gameStatus', gameStatus);
-    const container = containerRef.current;
     if (!['started', 'has-key'].includes(gameStatus)) return;
-    if (!container || !playerPos) return;
-
-    const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
-    if (!mazeDiv) return;
-
-    mazeDiv.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
-
-    const selector = `.maze-row > div[data-r="${playerPos.row}"][data-c="${playerPos.col}"]`;
-    const cell = mazeDiv.querySelector(selector) as HTMLElement | null;
-    if (cell) cell.classList.add("hero");
-
+    render();
     if (relative) {
-      mazeDiv.dataset.rows = String(mazeDiv.querySelectorAll(".maze-row").length);
-      mazeDiv.dataset.cols = String(
-        mazeDiv
-          .querySelector(".maze-row > div[data-r][data-c]")
-          ?.parentElement?.querySelectorAll(':scope > div[data-r][data-c]').length || 0
-      );
-      applyRelativeNumbers(mazeDiv, playerPos.row, playerPos.col);
+      showCoordinates(true);
     }
   }, [gameStatus, playerPos, containerRef, relative]);
+
+  useEffect(() => {
+    const onInvalid = () => {
+      if (!playerPos) return;
+      const container = containerRef.current;
+      if (!container) return;
+
+      const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
+      if (!mazeDiv) return;
+
+      const selector = `.maze-row > div[data-r="${playerPos.row}"][data-c="${playerPos.col}"]`;
+      const cell = mazeDiv.querySelector(selector) as HTMLElement | null;
+      if (cell) {
+        cell.classList.add("invalid-move");
+        setTimeout(() => cell.classList.remove("invalid-move"), 180);
+      }
+    };
+
+    const onKeyPicked = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const coord = customEvent.detail as Coord;
+      const container = containerRef.current;
+      if (!container) return;
+
+      const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
+      if (!mazeDiv) return;
+
+      const selector = `.maze-row > div[data-r="${coord.row}"][data-c="${coord.col}"]`;
+      const cell = mazeDiv.querySelector(selector) as HTMLElement | null;
+      if (cell) {
+        cell.classList.remove("key");
+      }
+    };
+
+    const onLogicTick = (_event: Event) => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
+      if (!mazeDiv) return;
+
+      mazeDiv.querySelectorAll(".trail").forEach((el) => el.classList.remove("trail"));
+    };
+
+    window.addEventListener("maze-invalid", onInvalid);
+    window.addEventListener("maze-key-picked", onKeyPicked);
+    window.addEventListener("maze-logic-tick", onLogicTick);
+
+    return () => {
+      window.removeEventListener("maze-invalid", onInvalid);
+      window.removeEventListener("maze-key-picked", onKeyPicked);
+      window.removeEventListener("maze-logic-tick", onLogicTick);
+    };
+  }, [playerPos, containerRef]);
+
+  return {
+    render,
+    updatePosition,
+    showCoordinates
+  };
 }
 
 export type UseHeroRenderType = ReturnType<typeof useHeroRender>;

@@ -9,7 +9,9 @@ export type GameStatus = 'waiting' | 'started' | 'has-key' | 'paused' | 'game-ov
 export type GameManager = {
   containerRef: RefObject<HTMLDivElement | null>;
   renderBoard: () => void;
-  cursor: Cursor;
+  cursor: CursorManager;
+  hero: HeroManager;
+  renderer: HeroRenderer;
 } & GameStatusManager & GameKeyManager;
 
 
@@ -63,13 +65,19 @@ export type GameStatusManager = {
 
 //Cursor Stuff
 export type CursorMode = 'normal' | 'insert' | 'replace' | 'visual' | 'visual-line';
+
 export type UseHeroType = {
   heroPos: Coord | null;
   setHeroPos: (pos: Coord | null) => void;
   moveHero: (dr: number, dc: number, steps: number, gameStatus: GameStatus, setGameStatus: (s: GameStatus) => void) => void;
+  canMoveTo: (coord: Coord) => boolean;
+  moveTo: (coord: Coord) => void;
+  pickupKey: () => void;
+  reachExit: () => void;
+  reset: () => void;
 };
 
-export type Cursor = { //return type of useCursor (currently useHero)
+export type CursorManager = {
   position: () => Coord;
   mode: () => CursorMode;
   move: (dCols: number, dRows: number, count: number) => void;
@@ -89,3 +97,21 @@ export type Cursor = { //return type of useCursor (currently useHero)
   getLastKey: () => string;
   hero?: UseHeroType;
 }
+
+export type HeroManager = {
+  position: Coord | null;
+  canMoveTo: (coord: Coord) => boolean;
+  moveTo: (coord: Coord) => void;
+  pickupKey: () => void;
+  reachExit: () => void;
+  reset: () => void;
+}
+
+export type HeroRenderer = {
+  render: () => void;
+  updatePosition: (coord: Coord) => void;
+  showCoordinates: (show: boolean) => void;
+}
+
+// Legacy type for backward compatibility
+export type Cursor = CursorManager;
