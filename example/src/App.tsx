@@ -1,12 +1,10 @@
 import { useGame } from "../../src/useGame";
 import { useKeyBindings } from "./useKeyBindings";
-import { useMounted } from "./useMounted";
 import { useIsMobile } from "./useIsMobile";
 import '../../src/game.css';
 
 function App() {
   const isMobile = useIsMobile();
-  const mounted = useMounted();
   const cols = isMobile ? 12 : 32;
   const rows = isMobile ? 8 : 24;
 

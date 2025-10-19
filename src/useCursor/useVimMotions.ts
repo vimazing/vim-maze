@@ -1,8 +1,8 @@
 import { useRef } from 'react';
-import type { VimMotionSystem, Motion } from '../types';
+import type { VimMotionSystem, Motion } from './types';
 
-export type { Motion } from '../types';
-export type { VimMotionSystem } from '../types';
+export type { Motion } from './types';
+export type { VimMotionSystem } from './types';
 
 export function useVimMotions(): VimMotionSystem {
   const countRef = useRef<string>('');

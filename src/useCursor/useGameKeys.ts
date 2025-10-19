@@ -1,4 +1,6 @@
-import type { GameStatusManager, KeyLogEntry, Cursor } from "../types";
+import type { GameStatusManager } from "../useGameStatus/types";
+import type { KeyLogEntry } from "../types";
+import type { Cursor } from "./types";
 import { useEffect, useRef, useState } from "react";
 
 

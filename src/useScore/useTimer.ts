@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import type { TimerManager } from '../types';
+import type { TimerManager } from './types';
 
-export type { TimerManager } from '../types';
+export type { TimerManager } from './types';
 
 export function useTimer(): TimerManager {
   const [timeValue, setTimeValue] = useState(0);

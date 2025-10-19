@@ -1,4 +1,4 @@
-import type { PositionTag, Coord, CellTag, MazeCell, MazeData } from "../types";
+import type { PositionTag, Coord, CellTag, MazeCell, MazeData } from "./types";
 
 export class MazeGenerator {
   width: number;

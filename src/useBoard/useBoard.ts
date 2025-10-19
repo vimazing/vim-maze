@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { MazeGenerator } from "./MazeGenerator";
 import { MazeRenderer } from "./MazeRenderer";
-import type { MazeCell } from "../types";
+import type { MazeCell } from "./types";
 
 export function useBoard(cols: number, rows: number) {
   const containerRef = useRef<HTMLDivElement | null>(null);

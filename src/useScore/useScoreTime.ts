@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import type { TimerManager, GameStatus } from "../types";
+import type { TimerManager } from "./types";
+import type { GameStatus } from "../useGameStatus/types";
 
 type UseScoreTimeParams = {
   gameStatus: GameStatus;

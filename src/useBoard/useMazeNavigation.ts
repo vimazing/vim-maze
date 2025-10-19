@@ -1,6 +1,6 @@
-import type { Coord, MazeCell, MazeNavigator } from '../types';
+import type { Coord, MazeCell, MazeNavigator } from './types';
 
-export type { MazeNavigator } from '../types';
+export type { MazeNavigator } from './types';
 
 export function useMazeNavigation(maze: MazeCell[][]): MazeNavigator {
   function isValidMove(_from: Coord, to: Coord): boolean {

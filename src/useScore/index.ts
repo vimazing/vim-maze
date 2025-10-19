@@ -1,3 +1,4 @@
+export * from './types';
 export * from './useScore';
 export * from './useScorePaths';
 export * from './useScoreTime';

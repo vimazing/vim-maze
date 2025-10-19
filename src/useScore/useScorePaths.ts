@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import type { BoardManager, Coord, ScorePathsResult } from "../types";
+import type { BoardManager, Coord } from "../useBoard/types";
+import type { ScorePathsResult } from "./types";
 
-export type { ScorePathsResult } from "../types";
+export type { ScorePathsResult } from "./types";
 
 type UseScorePathsParams = {
   board: BoardManager;

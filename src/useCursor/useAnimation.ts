@@ -1,7 +1,7 @@
 import { useRef } from 'react';
-import type { Coord, AnimationSystem } from '../types';
+import type { Coord, AnimationSystem } from './types';
 
-export type { AnimationSystem } from '../types';
+export type { AnimationSystem } from './types';
 
 export function useAnimation(): AnimationSystem {
   const animatingRef = useRef(false);

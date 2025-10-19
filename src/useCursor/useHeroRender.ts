@@ -1,7 +1,9 @@
 import { useEffect } from "react";
-import type { BoardManager, GameStatus, Coord, UseHeroType, HeroRenderManager } from "../types";
+import type { BoardManager } from "../useBoard/types";
+import type { GameStatus } from "../useGameStatus/types";
+import type { UseHeroType, HeroRenderManager, Coord } from "./types";
 
-export type { HeroRenderManager } from "../types";
+export type { HeroRenderManager } from "./types";
 
 type UseHeroRenderParams = {
   gameStatus: GameStatus;

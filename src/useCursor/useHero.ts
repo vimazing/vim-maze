@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import type { BoardManager, GameStatusManager, GameStatus, Coord, UseHeroType } from "../types";
+import type { BoardManager } from "../useBoard/types";
+import type { GameStatusManager, GameStatus } from "../useGameStatus/types";
+import type { UseHeroType, Coord } from "./types";
 import { useHeroRender } from "./useHeroRender";
 import { useMazeNavigation } from "../useBoard";
 import { useAnimation } from "./useAnimation";

@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useTimer } from "./useTimer";
 import { useScoreTime } from "./useScoreTime";
 import { useScorePaths } from "./useScorePaths";
-import type { BoardManager, GameStatusManager, UseHeroType } from "../types";
+import type { BoardManager } from "../useBoard/types";
+import type { GameStatusManager } from "../useGameStatus/types";
+import type { UseHeroType } from "../useCursor/types";
 
 type UseScoreParams = {
   board: BoardManager;

@@ -1,5 +1,7 @@
 import { useRef, useEffect } from 'react'
-import type { CursorMode, Coord, BoardManager, GameStatusManager } from '../types'
+import type { CursorMode, Coord } from './types';
+import type { BoardManager } from '../useBoard/types';
+import type { GameStatusManager } from '../useGameStatus/types';
 import { useHero } from './useHero';
 import { useGameKeys } from './useGameKeys';
 import { useMazeNavigation } from '../useBoard';

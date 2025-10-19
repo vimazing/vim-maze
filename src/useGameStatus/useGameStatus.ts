@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { GameStatus, BoardManager, Coord } from '../types';
+import type { GameStatus } from './types';
+import type { BoardManager, Coord } from '../useBoard/types';
 
 export function useGameStatus(board?: BoardManager, setHeroPos?: (pos: Coord) => void) {
   const [gameStatus, setGameStatus] = useState<GameStatus>('waiting');

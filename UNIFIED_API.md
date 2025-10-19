@@ -59,18 +59,22 @@ return {
 ```
 src/
 ├── index.ts                    # Main package exports
-├── types.ts                    # All shared TypeScript types
+├── types.ts                    # Re-exports all types from modules, useGame-specific types
 ├── useGame.ts                  # Main orchestrator hook
 ├── useGameStatus/
+│   ├── index.ts                # Public exports
+│   ├── types.ts                # GameStatus, GameStatusManager
 │   └── useGameStatus.ts        # Game state management
 ├── useBoard/
 │   ├── index.ts                # Public exports
+│   ├── types.ts                # Coord, MazeCell, MazeData, BoardManager, MazeNavigator
 │   ├── useBoard.ts             # Board/maze management hook
 │   ├── MazeGenerator.ts        # Maze generation algorithm
 │   ├── MazeRenderer.ts         # DOM rendering for maze
 │   └── useMazeNavigation.ts    # Pathfinding and validation
 ├── useCursor/
 │   ├── index.ts                # Public exports
+│   ├── types.ts                # CursorMode, CursorManager, HeroManager, Motion, AnimationSystem, VimMotionSystem
 │   ├── useCursor.ts            # Main cursor/input hook
 │   ├── useHero.ts              # Player position and movement
 │   ├── useHeroRender.ts        # Hero rendering on DOM
@@ -79,6 +83,7 @@ src/
 │   └── useAnimation.ts         # Multi-step movement animation
 └── useScore/
     ├── index.ts                # Public exports
+    ├── types.ts                # TimerManager, ScorePathsResult, ScoreManager
     ├── useScore.ts             # Main scoring hook
     ├── useScorePaths.ts        # Distance calculations
     ├── useScoreTime.ts         # Timer integration
@@ -89,7 +94,15 @@ src/
 
 ## Type System
 
-All types are centralized in `src/types.ts` for consistency and maintainability.
+Types are organized by module for clarity and maintainability:
+
+- **`src/useBoard/types.ts`**: Board, maze, and navigation types
+- **`src/useCursor/types.ts`**: Cursor, hero, vim motions, and animation types
+- **`src/useGameStatus/types.ts`**: Game status and lifecycle types
+- **`src/useScore/types.ts`**: Scoring and timer types
+- **`src/types.ts`**: Re-exports all module types + useGame-specific types (GameOptions, GameKeyManager, GameManager)
+
+This modular organization keeps types colocated with their related hooks while maintaining a unified `src/types.ts` entry point for convenience.
 
 ### Main Types
 
@@ -938,12 +951,27 @@ Rendering updates via refs
 
 ### Hook Return Types
 
-All hook return types are explicitly defined in `src/types.ts`. Import them directly:
+All hook return types are explicitly defined and organized by module:
 
 ```typescript
+// Import from main types.ts (re-exports all modules)
 import type { GameManager, CursorManager, ScoreManager } from './types';
 import type { TimerManager, HeroRenderManager, AnimationSystem } from './types';
+import type { BoardManager, Coord } from './types';
+import type { GameStatus, GameStatusManager } from './types';
+
+// Or import directly from module types for clarity
+import type { CursorManager } from './useCursor/types';
+import type { BoardManager } from './useBoard/types';
+import type { ScoreManager } from './useScore/types';
 ```
+
+### Type Organization
+
+- **Module-local types**: Defined in each hook's `types.ts` file
+- **Cross-module types**: Imported as needed within modules
+- **Public API types**: Re-exported through `src/types.ts`
+- **useGame-specific types**: Defined in main `src/types.ts` (GameOptions, GameKeyManager, GameManager)
 
 ### Type Imports
 
@@ -979,9 +1007,10 @@ const same = pos1.row === pos2.row && pos1.col === pos2.col;
 The vim-maze unified API provides a composable, type-safe game engine:
 
 - **Single Entry Point**: `useGame()` for all initialization
-- **Modular Design**: Independent, reusable hooks
-- **Type Safe**: Comprehensive TypeScript support
+- **Modular Design**: Independent, reusable hooks with colocated types
+- **Type Safe**: Comprehensive TypeScript support with explicit type definitions
+- **Organized Types**: Types organized by module with main `types.ts` re-exporting all
 - **Extensible**: Platform hook system for customization
-- **Well Structured**: Clear separation of concerns
+- **Well Structured**: Clear separation of concerns with intuitive file structure
 
-For detailed implementation, refer to source files in `src/`.
+For detailed implementation, refer to source files in `src/`. Each module's `types.ts` provides the interface definitions for that domain.
