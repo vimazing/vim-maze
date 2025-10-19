@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { RefObject } from 'react';
 import { MazeGenerator } from "./MazeGenerator";
 import { MazeRenderer } from "./MazeRenderer";
@@ -9,6 +9,13 @@ export function useBoard(cols: number, rows: number) {
   const mazeRef = useRef<MazeCell[][]>([]);
   const mazeInstanceRef = useRef<MazeGenerator | null>(null);
   const rendererRef = useRef<MazeRenderer | null>(null);
+
+
+  useEffect(() => {
+    if (containerRef.current) {
+      renderBoard();
+    }
+  }, [containerRef]);
 
   function renderBoard() {
     const container = containerRef.current;
@@ -35,12 +42,3 @@ export function useBoard(cols: number, rows: number) {
     renderBoard,
   };
 }
-
-export type BoardManager = {
-  containerRef: RefObject<HTMLDivElement | null>
-  mazeRef: RefObject<MazeCell[][]>
-  mazeInstanceRef: RefObject<MazeGenerator | null>
-  rendererRef: RefObject<MazeRenderer | null>
-  renderBoard: () => void
-}
-

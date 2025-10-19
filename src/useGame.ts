@@ -1,31 +1,19 @@
-import { useState } from 'react';
-import type { GameManager, GameOptions, GameStatus } from './types';
+import type { GameManager, GameOptions } from './types';
 import { useBoard } from './useBoard';
 import { useCursor } from './useCursor';
+import { useKeyBindings } from './useKeyBindings';
+import { useGameStatus } from './useGameStatus';
 
 export function useGame(options: GameOptions, platformHook?: unknown): GameManager {
   const { cols, rows } = options;
-  const [gameStatus, setGameStatus] = useState<GameStatus>('waiting');
   const boardManager = useBoard(cols, rows);
   const { containerRef, renderBoard } = boardManager;
   const cursor = useCursor(boardManager);
+  const gameStatusManager = useGameStatus();
 
-  function startGame() {
-    setGameStatus('started');
-  }
+  const { gameStatus, startGame, togglePause, quitGame } = gameStatusManager;
 
-  function togglePause(pause?: boolean) {
-    if (typeof pause === 'boolean') {
-      setGameStatus(pause ? 'paused' : 'started');
-      return;
-    }
-    setGameStatus(prevStatus => prevStatus === 'paused' ? 'started' : 'paused');
-  }
-
-  function quitGame() {
-    setGameStatus('waiting');
-  }
-
+  const keyManager = useKeyBindings({ cursor, gameStatus });
 
   const gameManager = {
     containerRef,
@@ -35,6 +23,7 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
     togglePause,
     quitGame,
     cursor,
+    keyManager,
   }
 
   if (typeof platformHook === 'function') {
