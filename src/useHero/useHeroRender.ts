@@ -1,0 +1,74 @@
+import { useEffect } from "react";
+import type { BoardManager, Cursor, GameStatus } from "../types";
+
+type UseHeroRenderParams = {
+  gameStatus: GameStatus;
+  board: BoardManager;
+  cursor: Cursor;
+  relative?: boolean;
+};
+
+export function useHeroRender(params: UseHeroRenderParams) {
+  const { gameStatus, board, cursor, relative = true } = params;
+  const { containerRef } = board;
+  const playerPos = cursor.position();
+
+  const applyRelativeNumbers = (mazeDiv: HTMLElement, R: number, C: number) => {
+    const rows = Number(mazeDiv.dataset.rows || 0);
+    const cols = Number(mazeDiv.dataset.cols || 0);
+
+    const rowNums = mazeDiv.querySelectorAll<HTMLElement>(".number.row[data-r]");
+    rowNums.forEach((el) => {
+      const r = Number(el.getAttribute("data-r"));
+      if (r <= 0 || r >= rows) {
+        el.textContent = "";
+        el.classList.remove("is-active");
+        return;
+      }
+      el.textContent = r === R ? String(r) : String(Math.abs(r - R));
+      el.classList.toggle("is-active", r === R);
+    });
+
+    const colNums = mazeDiv.querySelectorAll<HTMLElement>(".number.col[data-c]");
+    colNums.forEach((el) => {
+      const c = Number(el.getAttribute("data-c"));
+      if (c <= 0 || c >= cols) {
+        el.textContent = "";
+        el.classList.remove("is-active");
+        return;
+      }
+      el.textContent = c === C ? String(c) : String(Math.abs(c - C));
+      el.classList.toggle("is-active", c === C);
+    });
+
+    mazeDiv.classList.add("is-relative");
+  };
+
+  useEffect(() => {
+    console.log('gameStatus', gameStatus);
+    const container = containerRef.current;
+    if (!['started', 'has-key'].includes(gameStatus)) return;
+    if (!container) return;
+
+    const mazeDiv = container.querySelector("#maze") as HTMLElement | null;
+    if (!mazeDiv) return;
+
+    mazeDiv.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
+
+    const selector = `.maze-row > div[data-r="${playerPos.row}"][data-c="${playerPos.col}"]`;
+    const cell = mazeDiv.querySelector(selector) as HTMLElement | null;
+    if (cell) cell.classList.add("hero");
+
+    if (relative) {
+      mazeDiv.dataset.rows = String(mazeDiv.querySelectorAll(".maze-row").length);
+      mazeDiv.dataset.cols = String(
+        mazeDiv
+          .querySelector(".maze-row > div[data-r][data-c]")
+          ?.parentElement?.querySelectorAll(':scope > div[data-r][data-c]').length || 0
+      );
+      applyRelativeNumbers(mazeDiv, playerPos.row, playerPos.col);
+    }
+  }, [gameStatus, playerPos, containerRef, relative]);
+}
+
+export type UseHeroRenderType = ReturnType<typeof useHeroRender>;

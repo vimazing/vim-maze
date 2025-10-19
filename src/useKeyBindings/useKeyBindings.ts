@@ -56,7 +56,7 @@ export const useKeyBindings = ({ cursor, gameStatus }: UseKeyBindingsParams) => 
         return;
       }
 
-      const isDigit = ev.key >= "0" && e.key <= "9";
+      const isDigit = ev.key >= "0" && ev.key <= "9";
       if (isDigit) {
         if (ev.key === "0" && cursor.getCount() === "") return;
         recordKey(ev.key);
@@ -71,7 +71,7 @@ export const useKeyBindings = ({ cursor, gameStatus }: UseKeyBindingsParams) => 
       }
 
       if (ev.key === "^" || ev.key === "$") {
-        recordKey(e.key);
+        recordKey(ev.key);
         cursor.resetCount();
         if (ev.key === "^") {
           cursor.moveToStart();
