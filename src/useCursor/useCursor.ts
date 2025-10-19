@@ -5,6 +5,25 @@ import { useGameKeys } from './useGameKeys';
 import { useMazeNavigation } from '../useBoard';
 import { useVimMotions } from './useVimMotions';
 
+function validateAnchorMove(direction: 'start' | 'end' | 'top' | 'bottom', currentPos: Coord, board: BoardManager): boolean {
+  const navDirection = direction === 'start' ? 'left' :
+    direction === 'end' ? 'right' :
+      direction === 'top' ? 'top' : 'bottom';
+
+  const navigator = useMazeNavigation(board.mazeRef.current);
+  const target = navigator.findAnchorTarget(currentPos, navDirection);
+  
+  if (!target) return false;
+
+  const dr = target.row > currentPos.row ? 1 :
+    target.row < currentPos.row ? -1 : 0;
+  const dc = target.col > currentPos.col ? 1 :
+    target.col < currentPos.col ? -1 : 0;
+  const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
+
+  return navigator.validatePath(currentPos, { row: dr, col: dc }, steps);
+}
+
 export function useCursor(board: BoardManager, gameStatusManager: GameStatusManager) {
   const position = useRef<Coord>({ row: 0, col: 0 })
   const mode = useRef<CursorMode>('normal')
@@ -25,7 +44,7 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     const currentPos = position.current;
     const steps = Math.max(1, count);
     const direction = { row: dRows, col: dCols };
-    
+
     const targetCoord = {
       row: currentPos.row + direction.row * steps,
       col: currentPos.col + direction.col * steps
@@ -59,53 +78,66 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     move(0, 1, count);
   }
 
-  function moveToAnchor(target: 'start'|'end'|'top'|'bottom'): void {
-    const currentPos = position.current;
-    const direction = target === 'start' ? 'left' : 
-                     target === 'end' ? 'right' : 
-                     target === 'top' ? 'top' : 'bottom';
-    
-    const anchorTarget = navigator.findAnchorTarget(currentPos, direction);
-    if (!anchorTarget) {
-      window.dispatchEvent(new Event("maze-invalid"));
-      return;
-    }
+   function moveToAnchor(target: 'start' | 'end' | 'top' | 'bottom'): void {
+     const currentPos = position.current;
+     const direction = target === 'start' ? 'left' :
+       target === 'end' ? 'right' :
+         target === 'top' ? 'top' : 'bottom';
 
-    const dr = anchorTarget.row > currentPos.row ? 1 : 
-              anchorTarget.row < currentPos.row ? -1 : 0;
-    const dc = anchorTarget.col > currentPos.col ? 1 : 
-              anchorTarget.col < currentPos.col ? -1 : 0;
-    const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
+     const anchorTarget = navigator.findAnchorTarget(currentPos, direction);
+     if (!anchorTarget) return;
 
-    position.current = anchorTarget;
-    if (hero && hero.heroPos) {
-      hero.moveTo(anchorTarget);
-      if (steps > 0) {
-        vimMotions.setLastMotion({ dr, dc, steps });
-      }
-    }
-  }
+     const dr = anchorTarget.row > currentPos.row ? 1 :
+       anchorTarget.row < currentPos.row ? -1 : 0;
+     const dc = anchorTarget.col > currentPos.col ? 1 :
+       anchorTarget.col < currentPos.col ? -1 : 0;
+     const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
 
-  function moveToStart(): void {
-    moveToAnchor('start');
-  }
+     position.current = anchorTarget;
+     if (hero && hero.heroPos) {
+       hero.moveTo(anchorTarget);
+       if (steps > 0) {
+         vimMotions.setLastMotion({ dr, dc, steps });
+       }
+     }
+   }
 
-  function moveToEnd(): void {
-    moveToAnchor('end');
-  }
+   function moveToStart(): void {
+     if (!validateAnchorMove('start', position.current, board)) {
+       window.dispatchEvent(new Event("maze-invalid"));
+       return;
+     }
+     moveToAnchor('start');
+   }
 
-  function moveToTop(): void {
-    moveToAnchor('top');
-  }
+   function moveToEnd(): void {
+     if (!validateAnchorMove('end', position.current, board)) {
+       window.dispatchEvent(new Event("maze-invalid"));
+       return;
+     }
+     moveToAnchor('end');
+   }
 
-  function moveToBottom(): void {
-    moveToAnchor('bottom');
-  }
+   function moveToTop(): void {
+     if (!validateAnchorMove('top', position.current, board)) {
+       window.dispatchEvent(new Event("maze-invalid"));
+       return;
+     }
+     moveToAnchor('top');
+   }
+
+   function moveToBottom(): void {
+     if (!validateAnchorMove('bottom', position.current, board)) {
+       window.dispatchEvent(new Event("maze-invalid"));
+       return;
+     }
+     moveToAnchor('bottom');
+   }
 
   function repeatLastMotion(): void {
     const motion = vimMotions.repeatLastMotion();
     if (!motion || !hero || !hero.heroPos) return;
-    
+
     const currentPos = position.current;
     const targetCoord = {
       row: currentPos.row + motion.dr * motion.steps,
