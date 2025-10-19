@@ -37,6 +37,10 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     }
 
     position.current = targetCoord;
+    if (hero && hero.heroPos) {
+      hero.moveHero(dRows, dCols, steps, gameStatusManager.gameStatus, gameStatusManager.setGameStatus);
+      vimMotions.setLastMotion({ dr: dRows, dc: dCols, steps });
+    }
   }
 
   function moveLeft(count = 1): void {
@@ -73,7 +77,13 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
               anchorTarget.col < currentPos.col ? -1 : 0;
     const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
 
-    move(dc, dr, steps);
+    position.current = anchorTarget;
+    if (hero && hero.heroPos) {
+      hero.moveTo(anchorTarget);
+      if (steps > 0) {
+        vimMotions.setLastMotion({ dr, dc, steps });
+      }
+    }
   }
 
   function moveToStart(): void {
@@ -94,9 +104,20 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
 
   function repeatLastMotion(): void {
     const motion = vimMotions.repeatLastMotion();
-    if (!motion) return;
+    if (!motion || !hero || !hero.heroPos) return;
     
-    move(motion.dc, motion.dr, motion.steps);
+    const currentPos = position.current;
+    const targetCoord = {
+      row: currentPos.row + motion.dr * motion.steps,
+      col: currentPos.col + motion.dc * motion.steps
+    };
+
+    if (navigator.validatePath(currentPos, { row: motion.dr, col: motion.dc }, motion.steps)) {
+      position.current = targetCoord;
+      hero.moveHero(motion.dr, motion.dc, motion.steps, gameStatusManager.gameStatus, gameStatusManager.setGameStatus);
+    } else {
+      window.dispatchEvent(new Event("maze-invalid"));
+    }
   }
 
   function resetCount(): void {

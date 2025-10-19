@@ -321,6 +321,7 @@ The unified API is designed to accommodate:
 - ✅ **Specialized hooks** - Complete (useMazeNavigation, useVimMotions, useAnimation)
 - ✅ **Single source of truth** - Complete (hero position as authoritative)
 - ✅ **React-first architecture** - Complete (state-driven rendering)
+- ✅ **Hero movement implementation** - Complete (hjkl, anchors, repeat with counts)
 - ✅ **Platform integration** - Ready
 - ⏳ **Advanced features** - Pending (scoring, animations, etc.)
 

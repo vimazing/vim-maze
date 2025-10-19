@@ -14,7 +14,7 @@ const RELEVANT_KEYS = new Set([
 
 export const useGameKeys = (props: UseGameKeysParams) => {
   const { cursor, gameStatusManager } = props;
-  const { gameStatus, setGameStatus } = gameStatusManager;
+  const { gameStatus } = gameStatusManager;
   const [keyLog, setKeyLog] = useState<KeyLogEntry[]>([]);
   const logRef = useRef<KeyLogEntry[]>([]);
   const { hero } = cursor;
@@ -96,16 +96,15 @@ export const useGameKeys = (props: UseGameKeysParams) => {
       const count = Math.max(1, parseInt(cursor.getCount() || "1", 10));
       cursor.resetCount();
 
-      if (!hero) return;
       switch (ev.key) {
         case "h":
-        case "H": hero.moveHero(0, -1, count, gameStatus, setGameStatus); break;
+        case "H": cursor.moveLeft(count); break;
         case "j":
-        case "J": hero.moveHero(1, 0, count, gameStatus, setGameStatus); break;
+        case "J": cursor.moveDown(count); break;
         case "k":
-        case "K": hero.moveHero(-1, 0, count, gameStatus, setGameStatus); break;
+        case "K": cursor.moveUp(count); break;
         case "l":
-        case "L": hero.moveHero(0, 1, count, gameStatus, setGameStatus); break;
+        case "L": cursor.moveRight(count); break;
         default: return;
       }
     };

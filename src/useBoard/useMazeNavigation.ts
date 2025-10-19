@@ -26,43 +26,35 @@ export function useMazeNavigation(maze: MazeCell[][]): MazeNavigator {
     if (direction === 'left' || direction === 'right') {
       const step = direction === 'left' ? -1 : 1;
       let cc = c;
+      let lastValidPos = { row: r, col: c };
 
       while (true) {
         const next = cc + step;
-        if (next < 0 || next >= colsCount) return null;
-        if (maze[r][next].includes('wall')) {
-          const wallIdx = next;
-          const expectedWallIdx = direction === 'left' ? 0 : colsCount - 1;
-          const expectedCellIdx = direction === 'left' ? 1 : colsCount - 2;
-
-          if (wallIdx !== expectedWallIdx) return null;
-          if (cc !== expectedCellIdx) return null;
-          if (cc === c) return null;
-
-          return { row: r, col: cc };
+        if (next < 0 || next >= colsCount) break;
+        if (maze[r][next].includes('wall')) break;
+        if (!maze[r][next].includes('wall')) {
+          lastValidPos = { row: r, col: next };
         }
         cc = next;
       }
+
+      return lastValidPos.col !== c ? lastValidPos : null;
     } else {
       const step = direction === 'top' ? -1 : 1;
       let rr = r;
+      let lastValidPos = { row: r, col: c };
 
       while (true) {
         const next = rr + step;
-        if (next < 0 || next >= rowsCount) return null;
-        if (maze[next][c].includes('wall')) {
-          const wallIdx = next;
-          const expectedWallIdx = direction === 'top' ? 0 : rowsCount - 1;
-          const expectedCellIdx = direction === 'top' ? 1 : rowsCount - 2;
-
-          if (wallIdx !== expectedWallIdx) return null;
-          if (rr !== expectedCellIdx) return null;
-          if (rr === r) return null;
-
-          return { row: rr, col: c };
+        if (next < 0 || next >= rowsCount) break;
+        if (maze[next][c].includes('wall')) break;
+        if (!maze[next][c].includes('wall')) {
+          lastValidPos = { row: next, col: c };
         }
         rr = next;
       }
+
+      return lastValidPos.row !== r ? lastValidPos : null;
     }
   }
 
