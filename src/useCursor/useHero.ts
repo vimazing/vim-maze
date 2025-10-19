@@ -1,12 +1,12 @@
 import { useRef, useState, useEffect } from "react";
-import type { BoardManager, GameStatus, Coord } from "../types";
+import type { BoardManager, GameStatusManager, GameStatus, Coord } from "../types";
 import { useHeroRender } from "./useHeroRender";
 
-export function useHero(board: BoardManager, gameStatus: GameStatus) {
+export function useHero(board: BoardManager, gameStatusManager: GameStatusManager) {
   const { mazeRef, containerRef } = board;
   const [heroPos, setHeroPos] = useState<Coord | null>(null);
-
   const animatingRef = useRef(false);
+  const { gameStatus } = gameStatusManager;
 
   function getCellEl(r: number, c: number): HTMLElement | null {
     const container = containerRef.current;

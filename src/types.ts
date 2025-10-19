@@ -8,15 +8,9 @@ export type GameStatus = 'waiting' | 'started' | 'hasKey' | 'paused' | 'game-ove
 
 export type GameManager = {
   containerRef: RefObject<HTMLDivElement | null>;
-  gameStatus: GameStatus;
   renderBoard: () => void;
-  startGame: () => void;
-  togglePause: (pause?: boolean) => void;
-  quitGame: () => void;
-
   cursor: Cursor;
-  keyManager: GameKeyManager;
-};
+} & GameStatusManager & GameKeyManager;
 
 
 export type BoardManager = {
@@ -55,8 +49,8 @@ export type KeyLogEntry = { key: string; timestamp: number };
 
 export type GameKeyManager = {
   keyLog: KeyLogEntry[];
-  clearLog: () => void;
-  getLog: () => KeyLogEntry[];
+  clearKeyLog: () => void;
+  getKeyLog: () => KeyLogEntry[];
 };
 
 export type GameStatusManager = {

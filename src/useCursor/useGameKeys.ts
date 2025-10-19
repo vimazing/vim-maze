@@ -1,12 +1,10 @@
-import type { GameStatus, KeyLogEntry, UseHeroType, Cursor } from "../types";
+import type { GameStatusManager, KeyLogEntry, Cursor } from "../types";
 import { useEffect, useRef, useState } from "react";
 
 
-type UseKeyBindingsParams = {
+type UseGameKeysParams = {
   cursor: Cursor;
-  hero: UseHeroType;
-  gameStatus: GameStatus;
-  setGameStatus: (status: GameStatus) => void;
+  gameStatusManager: GameStatusManager;
 };
 
 const RELEVANT_KEYS = new Set([
@@ -14,12 +12,14 @@ const RELEVANT_KEYS = new Set([
   "1", "2", "3", "4", "5", "6", "7", "8", "9"
 ]);
 
-export const useKeyBindings = ({ cursor, gameStatus, setGameStatus }: UseKeyBindingsParams) => {
+export const useGameKeys = (props: UseGameKeysParams) => {
+  const { cursor, gameStatusManager } = props;
+  const { gameStatus, setGameStatus } = gameStatusManager;
   const [keyLog, setKeyLog] = useState<KeyLogEntry[]>([]);
   const logRef = useRef<KeyLogEntry[]>([]);
   const { hero } = cursor;
 
-  const clearLog = () => {
+  const clearKeyLog = () => {
     logRef.current = [];
     setKeyLog([]);
   };
@@ -116,8 +116,8 @@ export const useKeyBindings = ({ cursor, gameStatus, setGameStatus }: UseKeyBind
 
   return {
     keyLog,
-    clearLog,
-    getLog: () => logRef.current,
+    clearKeyLog,
+    getKeyLog: () => logRef.current,
   };
 };
 

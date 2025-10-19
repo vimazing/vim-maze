@@ -43,14 +43,9 @@ type GameOptions = {
 ```tsx
 type GameManager = {
   containerRef: RefObject<HTMLDivElement | null>;
-  gameStatus: GameStatus;
   renderBoard: () => void;
-  startGame: () => void;
-  togglePause: (pause?: boolean) => void;
-  quitGame: () => void;
   cursor: Cursor;
-  keyManager: GameKeyManager;
-};
+} & GameStatusManager & GameKeyManager;
 ```
 
 ### `GameStatus`
@@ -96,8 +91,8 @@ type GameStatusManager = {
 ```tsx
 type GameKeyManager = {
   keyLog: KeyLogEntry[];
-  clearLog: () => void;
-  getLog: () => KeyLogEntry[];
+  clearKeyLog: () => void;
+  getKeyLog: () => KeyLogEntry[];
 };
 ```
 
@@ -141,26 +136,29 @@ Manages the game board/level structure.
 - `rendererRef` - Renderer instance
 - `renderBoard()` - Initialize/render the board
 
-### `useCursor(board: BoardManager) -> Cursor`
-Manages player/actor movement and state.
+### `useCursor(board: BoardManager, gameStatusManager: GameStatusManager) -> Cursor & { keyManager: GameKeyManager }`
+Manages player/actor movement and state, now includes integrated key management.
 
 **Returns:**
 - Position tracking
 - Mode management
 - Movement methods (with count support)
 - Directional movement helpers
+- Integrated `keyManager` for key logging and input handling
 
-### `useKeyBindings({ cursor, gameStatus }) -> GameKeyManager`
-Handles keyboard input and maps keys to cursor actions.
+### `useGameKeys({ cursor, gameStatusManager }) -> GameKeyManager`
+Internal hook that handles keyboard input and maps keys to cursor actions.
 
 **Parameters:**
 - `cursor` - Cursor binding context with movement methods
-- `gameStatus` - Current game status for state checking
+- `gameStatusManager` - Game status manager for state checking
 
 **Returns:**
 - `keyLog` - Array of key press entries with timestamps
-- `clearLog()` - Clear the key log
-- `getLog()` - Get current key log
+- `clearKeyLog()` - Clear the key log
+- `getKeyLog()` - Get current key log
+
+**Note:** This is now integrated within `useCursor` and not exposed as a separate hook.
 
 ### `useGameStatus() -> GameStatusManager`
 Manages game state and lifecycle.
@@ -260,11 +258,12 @@ The unified API is designed to accommodate:
 - ✅ **Type definitions** - Complete
 - ✅ **Core architecture** - Defined
 - ✅ **useGameStatus implementation** - Complete
-- ✅ **useKeyBindings implementation** - Complete
-- ✅ **useCursor implementation** - Complete
+- ✅ **useGameKeys implementation** - Complete (integrated into useCursor)
+- ✅ **useCursor implementation** - Complete (with integrated key management)
 - ✅ **useBoard implementation** - Complete
-- ✅ **useGame implementation** - Complete
+- ✅ **useGame implementation** - Complete (with flattened GameManager interface)
 - ✅ **React 19 optimization** - No useCallback/useMemo usage
+- ✅ **API refactoring** - Complete (key management moved into cursor module)
 - ⏳ **Platform integration** - Pending
 - ⏳ **Advanced features** - Pending (scoring, animations, etc.)
 
@@ -306,13 +305,14 @@ function App() {
 ### Platform Hook Implementation
 ```tsx
 export const useKeyBindings = (gameManager: GameManager) => {
-  const { gameStatus, startGame, quitGame, cursor } = gameManager;
+  const { gameStatus, startGame, quitGame, cursor, clearKeyLog } = gameManager;
   
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // Start game with 'i'
       if (e.key === "i" || e.key === "I") {
         if (["waiting", "game-over", "game-won"].includes(gameStatus)) {
+          clearKeyLog();
           startGame();
           return;
         }
@@ -336,24 +336,21 @@ export const useKeyBindings = (gameManager: GameManager) => {
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [gameStatus, startGame, quitGame, cursor]);
+  }, [gameStatus, startGame, quitGame, cursor, clearKeyLog]);
 };
 ```
 
 ### Internal Key Bindings Integration
 ```tsx
 // Inside useGame - simplified integration
-const keyManager = useKeyBindings({ cursor, gameStatus });
+const { keyManager, ...cursor } = useCursor(board, gameStatusManager);
 
 const gameManager = {
   containerRef,
-  gameStatus,
   renderBoard,
-  startGame,
-  togglePause,
-  quitGame,
   cursor,
-  keyManager,
+  ...keyManager,
+  ...gameStatusManager,
 };
 ```
 
@@ -428,13 +425,9 @@ Platform hooks receive the complete `GameManager` interface:
 ```tsx
 type GameManager = {
   containerRef: RefObject<HTMLDivElement | null>;
-  gameStatus: GameStatus;
   renderBoard: () => void;
-  startGame: () => void;
-  togglePause: (pause?: boolean) => void;
-  quitGame: () => void;
   cursor: Cursor;
-};
+} & GameStatusManager & GameKeyManager;
 ```
 
 This allows platforms to:
@@ -443,3 +436,4 @@ This allows platforms to:
 - Add save/load functionality
 - Integrate with platform-specific UI
 - Extend game behavior without modifying core logic
+- Access key logging functionality via `clearKeyLog()` and `getKeyLog()`

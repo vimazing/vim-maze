@@ -1,17 +1,18 @@
 import { useRef, useEffect } from 'react'
-import type { CursorMode, Coord, BoardManager, GameStatus } from '../types'
-import { useHero } from './useHero'
+import type { CursorMode, Coord, BoardManager, GameStatusManager } from '../types'
+import { useHero } from './useHero';
+import { useGameKeys } from './useGameKeys';
 
 type Motion = { dr: number; dc: number; steps: number };
 
-export function useCursor(board: BoardManager, gameStatus: GameStatus) {
+export function useCursor(board: BoardManager, gameStatusManager: GameStatusManager) {
   const position = useRef<Coord>({ row: 0, col: 0 })
   const mode = useRef<CursorMode>('normal')
   const countRef = useRef<string>("");
   const lastMotionRef = useRef<Motion | null>(null);
   const lastKeyRef = useRef<string>("");
 
-  const hero = useHero(board, gameStatus);
+  const hero = useHero(board, gameStatusManager);
 
   // Sync cursor position with hero position
   useEffect(() => {
@@ -219,7 +220,7 @@ export function useCursor(board: BoardManager, gameStatus: GameStatus) {
     return lastKeyRef.current;
   }
 
-  const cursorAPI = {
+  const cursor = {
     position: () => position.current,
     mode: () => mode.current,
     move,
@@ -237,12 +238,11 @@ export function useCursor(board: BoardManager, gameStatus: GameStatus) {
     setCount,
     setLastKey,
     getLastKey,
+    hero,
   }
 
+  const keyManager = useGameKeys({ cursor, gameStatusManager });
 
-  return {
-    ...cursorAPI,
-    hero,
-  };
+  return { ...cursor, keyManager };
 }
 

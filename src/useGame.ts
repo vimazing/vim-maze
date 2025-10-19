@@ -1,7 +1,6 @@
 import type { GameManager, GameOptions } from './types';
 import { useBoard } from './useBoard';
 import { useCursor } from './useCursor';
-import { useKeyBindings } from './useKeyBindings';
 import { useGameStatus } from './useGameStatus';
 
 export function useGame(options: GameOptions, platformHook?: unknown): GameManager {
@@ -9,22 +8,14 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
   const board = useBoard(cols, rows);
   const { containerRef, renderBoard } = board;
   const gameStatusManager = useGameStatus();
-
-  const { gameStatus, startGame, togglePause, quitGame, setGameStatus } = gameStatusManager;
-
-  const cursor = useCursor(board, gameStatus);
-
-  const keyManager = useKeyBindings({ cursor, gameStatus, setGameStatus });
+  const { keyManager, ...cursor } = useCursor(board, gameStatusManager);
 
   const gameManager = {
     containerRef,
-    gameStatus,
+    ...keyManager,
+    ...gameStatusManager,
     renderBoard,
-    startGame,
-    togglePause,
-    quitGame,
     cursor,
-    keyManager,
   }
 
   if (typeof platformHook === 'function') {
