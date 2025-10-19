@@ -89,6 +89,7 @@ import { MazeRenderer } from './MazeRenderer';
 - **Destructuring**: Use object destructuring for parameters and returns
 - **Arrow functions**: Prefer arrow functions for consistency
 - **No useCallback/useMemo**: React 19 optimization makes these hooks unnecessary
+- **useEffect dependencies**: Only use values, never functions as dependencies
 
 ### Error Handling
 - **Early returns**: Guard clauses at function start
@@ -178,6 +179,7 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
 - Write overly complex implementations
 - Add unnecessary features
 - Use `useCallback` or `useMemo` anywhere in the codebase
+- Use functions as useEffect dependencies
 
 ### Always DO
 - Follow existing code patterns exactly

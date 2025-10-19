@@ -112,7 +112,7 @@ export const useKeyBindings = ({ cursor, gameStatus, setGameStatus }: UseKeyBind
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [cursor, gameStatus]);
+  }, [gameStatus]);
 
   return {
     keyLog,
