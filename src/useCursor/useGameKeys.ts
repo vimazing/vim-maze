@@ -34,17 +34,15 @@ export const useGameKeys = (props: UseGameKeysParams) => {
     const handler = (ev: KeyboardEvent) => {
       if (["waiting", "game-over", "game-won"].includes(gameStatus)) return;
 
-      // "0" behaves like Vim: beginning of line
-      if (ev.key === "0" && cursor.getCount() === "") {
-        recordKey("0");
-        cursor.resetCount();
-        cursor.moveToStart();
-        return;
-      }
+       if (ev.key === "0" && !cursor.hasCount()) {
+         recordKey("0");
+         cursor.resetCount();
+         cursor.moveToStart();
+         return;
+       }
 
       const isDigit = ev.key >= "0" && ev.key <= "9";
       if (isDigit) {
-        if (ev.key === "0" && cursor.getCount() === "") return;
         recordKey(ev.key);
         cursor.setCount(ev.key);
         return;

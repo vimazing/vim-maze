@@ -6,6 +6,7 @@ export type VimMotionSystem = {
   processKey: (key: string) => { type: 'move'|'anchor'|'repeat'|'count', data: any } | null;
   resetCount: () => void;
   getCount: () => number;
+  hasCount: () => boolean;
   setLastMotion: (motion: Motion) => void;
   repeatLastMotion: () => Motion | null;
 };
@@ -98,10 +99,15 @@ export function useVimMotions(): VimMotionSystem {
     return lastMotionRef.current;
   }
 
+  function hasCount(): boolean {
+    return countRef.current !== '';
+  }
+
   return {
     processKey,
     resetCount,
     getCount,
+    hasCount,
     setLastMotion,
     repeatLastMotion
   };

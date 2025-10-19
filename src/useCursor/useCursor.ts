@@ -12,7 +12,7 @@ function validateAnchorMove(direction: 'start' | 'end' | 'top' | 'bottom', curre
 
   const navigator = useMazeNavigation(board.mazeRef.current);
   const target = navigator.findAnchorTarget(currentPos, navDirection);
-  
+
   if (!target) return false;
 
   const dr = target.row > currentPos.row ? 1 :
@@ -78,61 +78,61 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     move(0, 1, count);
   }
 
-   function moveToAnchor(target: 'start' | 'end' | 'top' | 'bottom'): void {
-     const currentPos = position.current;
-     const direction = target === 'start' ? 'left' :
-       target === 'end' ? 'right' :
-         target === 'top' ? 'top' : 'bottom';
+  function moveToAnchor(target: 'start' | 'end' | 'top' | 'bottom'): void {
+    const currentPos = position.current;
+    const direction = target === 'start' ? 'left' :
+      target === 'end' ? 'right' :
+        target === 'top' ? 'top' : 'bottom';
 
-     const anchorTarget = navigator.findAnchorTarget(currentPos, direction);
-     if (!anchorTarget) return;
+    const anchorTarget = navigator.findAnchorTarget(currentPos, direction);
+    if (!anchorTarget) return;
 
-     const dr = anchorTarget.row > currentPos.row ? 1 :
-       anchorTarget.row < currentPos.row ? -1 : 0;
-     const dc = anchorTarget.col > currentPos.col ? 1 :
-       anchorTarget.col < currentPos.col ? -1 : 0;
-     const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
+    const dr = anchorTarget.row > currentPos.row ? 1 :
+      anchorTarget.row < currentPos.row ? -1 : 0;
+    const dc = anchorTarget.col > currentPos.col ? 1 :
+      anchorTarget.col < currentPos.col ? -1 : 0;
+    const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
 
-     position.current = anchorTarget;
-     if (hero && hero.heroPos) {
-       hero.moveTo(anchorTarget);
-       if (steps > 0) {
-         vimMotions.setLastMotion({ dr, dc, steps });
-       }
-     }
-   }
+    position.current = anchorTarget;
+    if (hero && hero.heroPos) {
+      hero.moveTo(anchorTarget);
+      if (steps > 0) {
+        vimMotions.setLastMotion({ dr, dc, steps });
+      }
+    }
+  }
 
-   function moveToStart(): void {
-     if (!validateAnchorMove('start', position.current, board)) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     moveToAnchor('start');
-   }
+  function moveToStart(): void {
+    if (!validateAnchorMove('start', position.current, board)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    moveToAnchor('start');
+  }
 
-   function moveToEnd(): void {
-     if (!validateAnchorMove('end', position.current, board)) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     moveToAnchor('end');
-   }
+  function moveToEnd(): void {
+    if (!validateAnchorMove('end', position.current, board)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    moveToAnchor('end');
+  }
 
-   function moveToTop(): void {
-     if (!validateAnchorMove('top', position.current, board)) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     moveToAnchor('top');
-   }
+  function moveToTop(): void {
+    if (!validateAnchorMove('top', position.current, board)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    moveToAnchor('top');
+  }
 
-   function moveToBottom(): void {
-     if (!validateAnchorMove('bottom', position.current, board)) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     moveToAnchor('bottom');
-   }
+  function moveToBottom(): void {
+    if (!validateAnchorMove('bottom', position.current, board)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    moveToAnchor('bottom');
+  }
 
   function repeatLastMotion(): void {
     const motion = vimMotions.repeatLastMotion();
@@ -156,13 +156,17 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     vimMotions.resetCount();
   }
 
-  function getCount(): string {
-    return String(vimMotions.getCount());
-  }
+   function getCount(): string {
+     return String(vimMotions.getCount());
+   }
 
-  function setCount(digit: string): void {
-    vimMotions.processKey(digit);
-  }
+   function hasCount(): boolean {
+     return vimMotions.hasCount();
+   }
+
+   function setCount(digit: string): void {
+     vimMotions.processKey(digit);
+   }
 
   function setLastKey(key: string): void {
     lastKeyRef.current = key;
@@ -172,26 +176,27 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     return lastKeyRef.current;
   }
 
-  const cursor = {
-    position: () => position.current,
-    mode: () => mode.current,
-    move,
-    moveLeft,
-    moveRight,
-    moveUp,
-    moveDown,
-    moveToStart,
-    moveToEnd,
-    moveToTop,
-    moveToBottom,
-    repeatLastMotion,
-    resetCount,
-    getCount,
-    setCount,
-    setLastKey,
-    getLastKey,
-    hero,
-  }
+   const cursor = {
+     position: () => position.current,
+     mode: () => mode.current,
+     move,
+     moveLeft,
+     moveRight,
+     moveUp,
+     moveDown,
+     moveToStart,
+     moveToEnd,
+     moveToTop,
+     moveToBottom,
+     repeatLastMotion,
+     resetCount,
+     getCount,
+     hasCount,
+     setCount,
+     setLastKey,
+     getLastKey,
+     hero,
+   }
 
   const keyManager = useGameKeys({ cursor, gameStatusManager });
 

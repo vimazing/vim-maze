@@ -90,12 +90,13 @@ export type CursorManager = {
   moveToTop: () => void;
   moveToBottom: () => void;
   repeatLastMotion: () => void;
-  resetCount: () => void;
-  getCount: () => string;
-  setCount: (digit: string) => void;
-  setLastKey: (key: string) => void;
-  getLastKey: () => string;
-  hero?: UseHeroType;
+   resetCount: () => void;
+   getCount: () => string;
+   hasCount: () => boolean;
+   setCount: (digit: string) => void;
+   setLastKey: (key: string) => void;
+   getLastKey: () => string;
+   hero?: UseHeroType;
 }
 
 export type HeroManager = {
