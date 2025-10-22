@@ -14,7 +14,7 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
   
   const hero = cursor.hero;
   const renderer = useHeroRender({ gameStatus: gameStatusManager.gameStatus, board, hero });
-  const scoreManager = useScore({ board, hero, gameStatusManager, keyManager });
+  const scoreManager = useScore({ board, hero, gameStatusManager, keyManager, rows, cols });
 
   const gameManager: GameManager = {
     containerRef,
