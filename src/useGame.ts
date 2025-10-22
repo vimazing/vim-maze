@@ -6,7 +6,7 @@ import { useHeroRender } from './useCursor';
 import { useScore } from './useScore';
 
 export function useGame(options: GameOptions, platformHook?: unknown): GameManager {
-  const { cols, rows } = options;
+  const { cols, rows, timeLimit = 600 } = options;
   const board = useBoard(cols, rows);
   const { containerRef, renderBoard } = board;
   const gameStatusManager = useGameStatus();
@@ -14,7 +14,7 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
   
   const hero = cursor.hero;
   const renderer = useHeroRender({ gameStatus: gameStatusManager.gameStatus, board, hero });
-  const scoreManager = useScore({ board, hero, gameStatusManager, keyManager, rows, cols });
+  const scoreManager = useScore({ board, hero, gameStatusManager, keyManager, rows, cols, timeLimit });
 
   const gameManager: GameManager = {
     containerRef,

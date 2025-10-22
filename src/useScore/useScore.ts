@@ -13,11 +13,12 @@ type UseScoreParams = {
   keyManager?: { keyLog: any[] };
   rows: number;
   cols: number;
+  timeLimit: number;
 };
 
-export function useScore({ board, hero, gameStatusManager, keyManager, rows, cols }: UseScoreParams) {
+export function useScore({ board, hero, gameStatusManager, keyManager, rows, cols, timeLimit }: UseScoreParams) {
   const timer = useTimer();
-  const { gameStatus } = gameStatusManager;
+  const { gameStatus, setGameStatus } = gameStatusManager;
   const { timeValue, startTimer, stopTimer, resetTimer } = timer;
 
   const {
@@ -34,6 +35,16 @@ export function useScore({ board, hero, gameStatusManager, keyManager, rows, col
   const keystrokes = keyManager ? keyManager.keyLog.length : 0;
 
   useScoreTime({ gameStatus, timer });
+
+  useEffect(() => {
+    if (gameStatus !== "started" && gameStatus !== "has-key") return;
+
+    const timeLimitMs = timeLimit * 1000;
+    if (timeValue >= timeLimitMs) {
+      setGameStatus("game-over");
+      return;
+    }
+  }, [gameStatus, timeValue, timeLimit, setGameStatus]);
 
   useEffect(() => {
     if (gameStatus !== "game-won") return;

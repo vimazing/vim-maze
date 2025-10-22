@@ -11,6 +11,7 @@ export * from './useScore/types';
 export type GameOptions = {
   rows: number;
   cols: number;
+  timeLimit?: number;
 };
 
 export type KeyLogEntry = { key: string; timestamp: number };
