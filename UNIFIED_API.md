@@ -15,8 +15,9 @@ Complete specification for building VIMazing games. This document defines the ar
 4. [Game-Specific Flexibility](#game-specific-flexibility)
 5. [Hook Specifications](#hook-specifications)
 6. [Type System](#type-system)
-7. [Creating a New Game](#creating-a-new-game)
-8. [Integration Guide](#integration-guide)
+7. [Game Instructions Export](#game-instructions-export)
+8. [Creating a New Game](#creating-a-new-game)
+9. [Integration Guide](#integration-guide)
 
 ---
 
@@ -522,6 +523,113 @@ export * from './useScore/types';
 export type GameOptions = { /* game-specific */ };
 export type GameManager = { /* unified interface */ };
 ```
+
+---
+
+## Game Instructions Export
+
+### Required Export
+
+All games must export a `gameInfo` object containing structured documentation for platform consumption.
+
+**File:** `src/gameInfo.ts`
+
+```typescript
+export const gameInfo = {
+  name: string;                    // Game name
+  description: string;             // Brief description
+  
+  controls: {
+    navigation: Array<{ keys: string; description: string }>;
+    // Additional control sections as needed
+    game: Array<{ keys: string; description: string }>;
+  };
+  
+  rules: {
+    // Game-specific rule sections
+  };
+  
+  scoring: {
+    formula: string;
+    range: string;
+    penalties: Array<{ factor: string; formula: string; example: string }>;
+    examples: Array<any>;
+  };
+  
+  gameOver: {
+    conditions: Array<{ type: string; trigger: string; message: string }>;
+  };
+  
+  objective: string;               // How to win (one sentence)
+  winCondition: string;            // Specific win trigger
+} as const;
+
+export type GameInfo = typeof gameInfo;
+```
+
+**Export from main index:**
+```typescript
+// src/index.ts
+export { gameInfo } from './gameInfo';
+export type { GameInfo } from './gameInfo';
+```
+
+### Purpose
+
+The `gameInfo` export allows platforms to:
+- Render in-game help screens
+- Generate tutorials
+- Display control references
+- Show scoring breakdowns
+- Explain game mechanics
+
+Without needing to parse documentation or README files.
+
+### Usage by Platforms
+
+```typescript
+import { gameInfo } from '@vimazing/your-game';
+
+// Render controls
+gameInfo.controls.navigation.forEach(control => {
+  renderControl(control.keys, control.description);
+});
+
+// Show scoring formula
+displayScoringInfo(gameInfo.scoring.formula, gameInfo.scoring.penalties);
+
+// Display game-over conditions
+gameInfo.gameOver.conditions.forEach(condition => {
+  showCondition(condition.type, condition.trigger);
+});
+```
+
+### Required Sections
+
+**Minimum structure:**
+- `name` - Game name
+- `description` - Brief description
+- `controls.navigation` - VIM motion controls (required)
+- `controls.game` - Game lifecycle controls (space, q, p)
+- `rules` - At least one rule section
+- `scoring.formula` - Score calculation
+- `scoring.range` - Score bounds (always "0 - 1000 points")
+- `gameOver.conditions` - At least one condition
+- `objective` - Win goal
+- `winCondition` - Specific trigger
+
+**Optional sections:**
+- Additional control groups (editing, actions, etc.)
+- Visual feedback explanations
+- Hints/power-ups/special mechanics
+- Examples and breakdowns
+
+### Examples
+
+See implementations:
+- **vim-sudoku/src/gameInfo.ts** - Complex puzzle game with modes, hints
+- **vim-maze/src/gameInfo.ts** - Navigation game with maze mechanics
+- **vimazing-game-skeleton/src/gameInfo.ts** - Template with TODOs
 
 ---
 

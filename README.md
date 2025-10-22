@@ -404,6 +404,35 @@ useGame({
 
 ---
 
+## Game Instructions Export
+
+The package exports a structured `gameInfo` object containing complete game documentation:
+
+```typescript
+import { gameInfo } from '@vimazing/vim-maze';
+
+// Access structured instructions
+console.log(gameInfo.name);           // "VIM Maze"
+console.log(gameInfo.controls);       // Navigation, game controls
+console.log(gameInfo.rules);          // Movement, game flow, maze elements
+console.log(gameInfo.scoring);        // Formula, penalties, size multiplier, examples
+console.log(gameInfo.gameOver);       // Time limit condition
+console.log(gameInfo.mazeGeneration); // Algorithm, guarantees, placement
+console.log(gameInfo.metrics);        // Tracked metrics during gameplay
+console.log(gameInfo.objective);      // Win condition
+```
+
+**Use cases:**
+- Render in-game help screens
+- Generate tutorials
+- Display control reference
+- Show scoring breakdown
+- Explain maze mechanics
+
+All data is fully typed with the `GameInfo` type for type safety.
+
+---
+
 ## Example App
 
 A demo application lives under `example/` and consumes the package directly.
