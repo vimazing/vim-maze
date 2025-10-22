@@ -1,50 +1,54 @@
 # @vimazing/vim-maze
 
+[![npm version](https://img.shields.io/npm/v/@vimazing/vim-maze.svg)](https://www.npmjs.com/package/@vimazing/vim-maze)
+[![npm downloads](https://img.shields.io/npm/dm/@vimazing/vim-maze.svg)](https://www.npmjs.com/package/@vimazing/vim-maze)
+[![license](https://img.shields.io/npm/l/@vimazing/vim-maze.svg)](https://github.com/vimazing/vim-maze/blob/main/LICENSE)
+
 ![VIMazing maze demo](./vim-maze.gif)
 
-Lightweight, typed **React hooks** and utilities for building interactive maze games with VIM-inspired controls.
+Lightweight, typed **React hooks** for building interactive maze games with **VIM-style navigation**.
 
-Part of the [VIMazing](https://vimazing.com) project - [GitHub](https://github.com/andrepadez/vimazing-vimaze).
+Part of the [VIMazing](https://vimazing.com) project.
 
 ---
 
 ## Contents
-
 - [Features](#features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [API Overview](#api-overview)
-- [Unified Architecture](#unified-architecture)
+- [API Reference](#api-reference)
+- [Game States](#game-states)
+- [VIM Controls](#vim-controls)
+- [Scoring System](#scoring-system)
+- [Game Over Conditions](#game-over-conditions)
+- [Configuration](#configuration)
 - [Example App](#example-app)
-- [Documentation](#documentation)
-- [Build & Release](#build--release)
 - [License](#license)
-- [Acknowledgements](#acknowledgements)
 
 ---
 
 ## Features
 
-- **Unified API** – Single entry point `useGame()` for complete game setup with composition hooks for granular control
-- **Fully Typed** – Comprehensive TypeScript support with organized, module-specific type definitions
-- **VIM-style Navigation** – Full `hjkl` motion support with counts, anchors (`^`, `$`, `g`, `G`), and repeat (`.`)
-- **Modular Hooks** – Independent, reusable hooks: `useBoard`, `useCursor`, `useScore`, `useGameStatus`
-- **Scoring System** – Built-in timer, efficiency tracking, keystroke logging, and optimal path calculation
-- **Platform Integration** – Optional platform hook for analytics, custom bindings, and platform-specific logic
-- **Tree-shakeable Exports** – Import only what you need to keep bundles lean
-- **CSS Included** – Pre-styled maze rendering with optional coordinate display
+- 🎮 **VIM navigation** – Full hjkl movement with counts, anchors, and repeat
+- 🗺️ **Procedural mazes** – Algorithm-generated mazes with guaranteed solvability
+- ⌨️ **Complete VIM motions** – hjkl, counts (5j), anchors (^/$), gg/G, repeat (.)
+- 🎯 **Maze navigation** – Find key, reach exit, with wall collision detection
+- ⏱️ **Time-based gameplay** – Configurable time limits with game-over on timeout
+- 📊 **Simple scoring** – Time + keystrokes with maze size multiplier
+- 🎨 **Tokyo Night theme** – Beautiful dark theme with clear visual feedback
+- 📦 **Full TypeScript** – Complete type safety with generated declarations
+- 🪝 **Composable architecture** – Clean separation: board, cursor, score, game status
+- 🌐 **Platform hooks** – Optional integration for analytics and custom bindings
 
 ---
 
 ## Installation
 
-Using **npm**:
-
 ```bash
 npm install @vimazing/vim-maze
 ```
 
-Or with **bun**:
+Or with bun:
 
 ```bash
 bun add @vimazing/vim-maze
@@ -54,184 +58,392 @@ bun add @vimazing/vim-maze
 
 ## Quick Start
 
-### Minimal Setup
-
 ```tsx
 import { useGame } from "@vimazing/vim-maze";
 import "@vimazing/vim-maze/game.css";
 
-function MazeGame() {
-  const gameManager = useGame({ cols: 32, rows: 24 });
-  const { containerRef, gameStatus, startGame } = gameManager;
+export function MazeGame() {
+  const gameManager = useGame({ 
+    rows: 24, 
+    cols: 32,
+    timeLimit: 600  // 10 minutes
+  });
+  
+  const { containerRef, gameStatus, scoreManager, startGame } = gameManager;
 
   return (
     <div>
-      <div ref={containerRef} />
-      <button onClick={startGame}>Start Game</button>
-      <p>Status: {gameStatus}</p>
-    </div>
-  );
-}
-```
-
-### With Scoring and Full Features
-
-```tsx
-import { useGame } from "@vimazing/vim-maze";
-import "@vimazing/vim-maze/game.css";
-
-function MazeGame() {
-  const gameManager = useGame({ cols: 32, rows: 24 });
-  const { containerRef, gameStatus, startGame, scoreManager } = gameManager;
-  const { timeValue, efficiency, keystrokes, optimalSteps, finalScore } = scoreManager;
-
-  return (
-    <div>
-      <div ref={containerRef} />
-      <button onClick={startGame}>Start</button>
+      <h1>VIMazing Maze</h1>
       
-      {(gameStatus === 'started' || gameStatus === 'has-key') && (
+      {gameStatus === 'waiting' && (
+        <button onClick={startGame}>Start Game</button>
+      )}
+      
+      <div ref={containerRef} />
+      
+      {gameStatus === 'game-won' && (
         <div>
-          <p>Time: {(timeValue / 1000).toFixed(1)}s</p>
-          <p>Efficiency: {efficiency}%</p>
-          <p>Keystrokes: {keystrokes} / {optimalSteps}</p>
+          <h2>You Won!</h2>
+          <p>Score: {scoreManager.finalScore} / 1000</p>
+          <p>Time: {Math.floor(scoreManager.timeValue / 1000)}s</p>
         </div>
       )}
-
-      {gameStatus === 'game-won' && <p>🎉 Final Score: {finalScore}</p>}
     </div>
   );
 }
 ```
 
-> **Note:** You must manually import the CSS file. The package exports styles but does not auto-import them, giving you control over when and how styles are loaded.
-
-### Default Controls
-
-| Key | Action |
-| --- | --- |
-| `Space` | Start game / Restart |
-| `h` / `j` / `k` / `l` | Move left / down / up / right |
-| `^` | Move to row start |
-| `$` | Move to row end |
-| `g` | Move to maze top |
-| `G` | Move to maze bottom |
-| `.` | Repeat last motion |
-| `<count><motion>` | Move with count (e.g., `5j` = down 5) |
-| `q` | Quit game |
+> **Note:** You must manually import `game.css` for styling.
 
 ---
 
-## API Overview
+## API Reference
 
-### Main Entry Point: `useGame()`
+### `useGame(options, platformHook?)`
 
-Initialize a complete game with a single call:
+Main orchestrator hook that composes all game functionality.
 
-```tsx
-const gameManager = useGame(
-  { cols: 32, rows: 24 },  // GameOptions
-  platformHook             // Optional: function for platform integration
-);
+#### Options
+
+```typescript
+type GameOptions = {
+  rows: number;         // Maze height in cells
+  cols: number;         // Maze width in cells  
+  timeLimit?: number;   // In seconds, default: 600 (10 min)
+};
 ```
 
-**Returns: `GameManager`**
-- `containerRef` – DOM ref for maze rendering
-- `gameStatus` – Current game state
-- `startGame()` / `togglePause()` / `quitGame()` – Game lifecycle
-- `cursor` – Player movement manager
-- `hero` – Player position and interactions
-- `scoreManager` – Scoring metrics
-- `renderer` – Hero rendering manager
-- `keyLog` – Keystroke history
+**Examples:**
+```typescript
+// Small maze
+useGame({ rows: 16, cols: 24 })
 
-### Core Hooks
+// Large maze with time pressure
+useGame({ 
+  rows: 32, 
+  cols: 48,
+  timeLimit: 300  // 5 minutes
+})
 
-| Hook | Purpose |
-| --- | --- |
-| `useBoard(cols, rows)` | Generates maze, manages board data, handles DOM rendering |
-| `useCursor(board, gameStatus)` | Input handling, vim motion processing, movement commands |
-| `useScore({ board, hero, gameStatusManager, keyManager })` | Timer, efficiency, keystroke tracking, score calculation |
-| `useGameStatus()` | Game state machine (waiting → started → has-key → game-won) |
-
-### Utility Functions & Classes
-
-```ts
-import { MazeGenerator, MazeRenderer } from "@vimazing/vim-maze";
-
-// Procedural maze generation
-const generator = new MazeGenerator(32, 24);
-generator.placeKey();
-const maze = generator.maze;
-
-// DOM rendering for mazes
-const renderer = new MazeRenderer(generator.getData(), true);
-renderer.display(containerElement);
+// Custom configuration
+useGame({ 
+  rows: 24,
+  cols: 32,
+  timeLimit: 480  // 8 minutes
+})
 ```
 
-### Types
+#### Returns: GameManager
 
-All types are organized by module:
+```typescript
+type GameManager = {
+  // DOM Reference
+  containerRef: RefObject<HTMLDivElement | null>;
+  
+  // Rendering
+  renderBoard: () => void;
+  
+  // Game Status
+  gameStatus: GameStatus;
+  setGameStatus: (status: GameStatus) => void;
+  startGame: () => void;
+  togglePause: (pause?: boolean) => void;
+  quitGame: () => void;
+  
+  // Cursor (Hero)
+  cursor: CursorManager;
+  hero: HeroManager;
+  renderer: HeroRenderManager;
+  
+  // Scoring
+  scoreManager: ScoreManager;
+  
+  // Input Tracking
+  keyLog: KeyLogEntry[];
+  clearKeyLog: () => void;
+  getKeyLog: () => KeyLogEntry[];
+};
+```
 
-```ts
-import type {
-  GameManager,
-  GameStatus,
-  GameOptions,
-  Coord,
-  CursorManager,
-  HeroManager,
-  ScoreManager,
-  BoardManager,
-} from "@vimazing/vim-maze";
+#### CursorManager
 
-// Or import directly from module types:
-import type { CursorManager } from "@vimazing/vim-maze/useCursor";
-import type { BoardManager } from "@vimazing/vim-maze/useBoard";
+```typescript
+type CursorManager = {
+  position: () => Coord;              // Current { row, col }
+  mode: () => CursorMode;             // 'normal' | 'insert'
+  move: (dCols: number, dRows: number, count: number) => void;
+  moveLeft: (count?: number) => void;
+  moveRight: (count?: number) => void;
+  moveUp: (count?: number) => void;
+  moveDown: (count?: number) => void;
+  moveToStart: () => void;            // ^ or 0
+  moveToEnd: () => void;              // $
+  moveToTop: () => void;              // gg
+  moveToBottom: () => void;           // G
+  repeatLastMotion: () => void;       // .
+  resetCount: () => void;
+  getCount: () => string;
+  hasCount: () => boolean;
+  hero?: HeroManager;
+};
+```
+
+#### HeroManager
+
+```typescript
+type HeroManager = {
+  heroPos: Coord | null;              // Hero location
+  canMoveTo: (coord: Coord) => boolean;
+  moveTo: (coord: Coord) => void;
+  pickupKey: () => void;
+  reachExit: () => void;
+  reset: () => void;
+};
+```
+
+#### ScoreManager
+
+```typescript
+type ScoreManager = {
+  timeValue: number;                  // Milliseconds elapsed
+  startTimer: () => void;
+  stopTimer: () => void;
+  resetTimer: () => void;
+  distToKey: number;                  // Distance to key
+  distToExit: number;                 // Distance to exit
+  keystrokes: number;                 // Total keys pressed
+  finalScore: number | null;          // 0-1000, null until game-won
+};
 ```
 
 ---
 
-## Unified Architecture
+## Game States
 
-The library uses a **composable hook architecture** with modular organization:
+The game follows a strict state machine:
 
 ```
-useGame()
-  ├─ useBoard()           → maze generation & rendering
-  ├─ useCursor()          → vim motions & input handling
-  │   ├─ useHero()        → player position & interactions
-  │   └─ useVimMotions()  → vim keybinding processor
-  ├─ useGameStatus()      → game lifecycle state
-  └─ useScore()           → timing & scoring metrics
+waiting → started → has-key → game-won
+              ↓
+           game-over
+              
+All states → [quit] → waiting
+started/has-key ↔ paused
 ```
 
-### Type Organization
+### State Descriptions
 
-- **`useBoard/types.ts`** – Coord, MazeCell, MazeData, BoardManager
-- **`useCursor/types.ts`** – CursorManager, HeroManager, CursorMode, VimMotionSystem
-- **`useGameStatus/types.ts`** – GameStatus, GameStatusManager
-- **`useScore/types.ts`** – ScoreManager, TimerManager
-- **`types.ts`** – Re-exports all + useGame-specific types (GameOptions, GameManager, KeyLogEntry)
+| State | Description | Triggers |
+|-------|-------------|----------|
+| `waiting` | Initial state, awaiting start | Default on load |
+| `started` | Game in progress, searching for key | Press Space or call `startGame()` |
+| `has-key` | Key obtained, heading to exit | Hero reaches key cell |
+| `paused` | Game temporarily paused | Press P or call `togglePause()` |
+| `game-over` | Failed to complete in time | Time limit exceeded |
+| `game-won` | Successfully reached exit with key | Hero reaches exit after getting key |
 
-Each module's `types.ts` keeps types colocated with their logic, making the architecture easy to understand and extend.
+---
 
-### Platform Integration
+## VIM Controls
 
-Integrate with your platform using an optional platform hook:
+### Movement
 
-```tsx
-function platformHook(gameManager: GameManager) {
+| Key | Action | Example |
+|-----|--------|---------|
+| `h` | Move left | `h` moves 1 left |
+| `j` | Move down | `j` moves 1 down |
+| `k` | Move up | `k` moves 1 up |
+| `l` | Move right | `l` moves 1 right |
+| `<count><motion>` | Move with count | `5j` moves 5 down, `10l` moves 10 right |
+| `0` or `^` | Jump to row start | Move to leftmost walkable cell |
+| `$` | Jump to row end | Move to rightmost walkable cell |
+| `gg` | Jump to maze top | Move to topmost walkable row |
+| `G` | Jump to maze bottom | Move to bottommost walkable row |
+| `.` | Repeat last motion | Repeats with same count |
+
+### Game Control
+
+| Key | Action | Notes |
+|-----|--------|-------|
+| `q` | Quit game | Return to waiting state |
+| `p` | Pause/unpause | Toggle pause state |
+| `Space` | Start new game | Only in waiting/game-over state |
+
+### Movement Rules
+
+- **Wall collision**: Movement stops at walls, no wrapping
+- **Counted moves**: Multi-step movements (e.g., `5j`) stop at first wall
+- **Key pickup**: Automatic when hero reaches key cell
+- **Exit**: Can only enter after obtaining key
+
+---
+
+## Scoring System
+
+### Formula
+
+```
+Base Score = 1000 - (time penalty) - (keystroke penalty)
+Size Multiplier = max(1.0, (rows × cols) / 500)
+Final Score = min(1000, max(0, round(Base Score × Size Multiplier)))
+```
+
+### Penalties
+
+**Time Penalty:** `seconds / 10`
+- 10 seconds = -1 point
+- 60 seconds = -6 points
+- 300 seconds = -30 points
+
+**Keystroke Penalty:** `keystrokes / 2`
+- 2 keystrokes = -1 point
+- 50 keystrokes = -25 points
+- 200 keystrokes = -100 points
+
+### Size Multiplier
+
+Rewards larger, more complex mazes:
+- Small maze (16×24 = 384 cells): 1.0x multiplier
+- Medium maze (24×32 = 768 cells): 1.54x multiplier
+- Large maze (32×48 = 1536 cells): 3.07x multiplier
+
+### Example Scores
+
+**Small Maze (16×24):**
+```
+60 seconds, 80 keys:
+= 1000 - 6 - 40 = 954 × 1.0 = 954 / 1000
+```
+
+**Medium Maze (24×32):**
+```
+120 seconds, 150 keys:
+= 1000 - 12 - 75 = 913 × 1.54 = 1000 / 1000 (capped)
+```
+
+**Large Maze (32×48):**
+```
+180 seconds, 200 keys:
+= 1000 - 18 - 100 = 882 × 3.07 = 1000 / 1000 (capped)
+```
+
+---
+
+## Game Over Conditions
+
+### Time Limit
+
+- **Default:** 600 seconds (10 minutes)
+- **Configurable:** Set via `GameOptions.timeLimit`
+- **Trigger:** When `timeValue >= timeLimit × 1000`
+- **States:** Checked during `started` and `has-key` states
+
+### No Other Limits
+
+Unlike vim-sudoku, vim-maze has no hint system or additional penalties. The only way to lose is running out of time.
+
+---
+
+## Configuration
+
+### Recommended Configurations
+
+**Beginner:**
+```typescript
+useGame({ 
+  rows: 12,
+  cols: 16,
+  timeLimit: 900  // 15 minutes
+})
+```
+
+**Standard Small:**
+```typescript
+useGame({ 
+  rows: 16,
+  cols: 24,
+  timeLimit: 600  // 10 minutes
+})
+```
+
+**Standard Medium:**
+```typescript
+useGame({ 
+  rows: 24,
+  cols: 32,
+  timeLimit: 600  // 10 minutes
+})
+```
+
+**Standard Large:**
+```typescript
+useGame({ 
+  rows: 32,
+  cols: 48,
+  timeLimit: 600  // 10 minutes
+})
+```
+
+**Speed Challenge:**
+```typescript
+useGame({
+  rows: 24,
+  cols: 32,
+  timeLimit: 300  // 5 minutes
+})
+```
+
+**Marathon:**
+```typescript
+useGame({
+  rows: 48,
+  cols: 64,
+  timeLimit: 1200  // 20 minutes
+})
+```
+
+---
+
+## Example App
+
+A demo application lives under `example/` and consumes the package directly.
+
+```bash
+cd example
+npm install
+npm run dev
+```
+
+The example shows:
+- Maze size configuration
+- Live scoreboard (Time, Keystrokes, Distances)
+- Game status messages
+- Final score display on win
+- All vim controls working
+
+---
+
+## Platform Hook
+
+Optional callback for platform integration:
+
+```typescript
+function myPlatformHook(gameManager: GameManager) {
   // Track analytics
-  console.log('Game initialized');
-
+  console.log('Maze initialized:', gameManager.hero.heroPos);
+  
   // Add custom key handlers
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'p') gameManager.togglePause();
+    if (e.key === 'F1') {
+      console.log('Help requested');
+    }
   });
-
-  // Monitor game state
+  
+  // Monitor game events
   const interval = setInterval(() => {
+    if (gameManager.gameStatus === 'has-key') {
+      console.log('Key obtained!');
+    }
     if (gameManager.gameStatus === 'game-won') {
       console.log('Victory!', gameManager.scoreManager.finalScore);
       clearInterval(interval);
@@ -239,56 +451,23 @@ function platformHook(gameManager: GameManager) {
   }, 100);
 }
 
-const gameManager = useGame({ cols: 32, rows: 24 }, platformHook);
+const gameManager = useGame(
+  { rows: 24, cols: 32 }, 
+  myPlatformHook
+);
 ```
 
 ---
 
-## Example App
+## Maze Generation
 
-A complete demo application lives under `example/` showcasing the full API:
+Mazes are procedurally generated using a depth-first search algorithm with guaranteed solvability:
 
-```bash
-cd example
-bun install
-bun run dev
-```
-
-Open `http://localhost:5173` to play the game with scoring, efficiency tracking, and status display.
-
-During local development, the Vite config aliases `@vimazing/vim-maze` to source files for hot reloading. When publishing, run the build first so TypeScript declarations are generated.
-
----
-
-## Documentation
-
-For comprehensive documentation of all hooks, types, and patterns, see **[UNIFIED_API.md](./UNIFIED_API.md)**.
-
-Key sections:
-- Architecture Overview & Core Composition
-- Complete Type System Reference
-- Detailed Hook Documentation
-- Implementation Patterns & Examples
-- Integration Guide for New Games
-
----
-
-## Build & Release
-
-Build the distributable bundle and type declarations:
-
-```bash
-bun run build
-```
-
-This writes JavaScript, type definitions, and styles to `dist/`. The `prepublishOnly` hook runs this automatically before publishing.
-
-To publish a new version:
-
-```bash
-npm version patch  # or minor / major
-npm publish
-```
+- **Entrance:** Always top-left area
+- **Key:** Placed in maze requiring navigation
+- **Exit:** Always bottom-right area
+- **Paths:** Guaranteed path from entrance → key → exit
+- **Walls:** Procedurally generated with no isolated areas
 
 ---
 
