@@ -27,6 +27,6 @@ export type BoardManager = {
 
 export type MazeNavigator = {
   isValidMove: (from: Coord, to: Coord) => boolean;
-  findAnchorTarget: (from: Coord, direction: 'left' | 'right' | 'top' | 'bottom') => Coord | null;
+  findAnchorTarget: (from: Coord, direction: 'left' | 'right' | 'top' | 'bottom', hasKey?: boolean) => Coord | null;
   validatePath: (from: Coord, direction: Coord, steps: number) => boolean;
 };

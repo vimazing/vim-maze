@@ -10,57 +10,77 @@ export function useMazeNavigation(maze: MazeCell[][]): MazeNavigator {
     return true;
   }
 
-   function findAnchorTarget(from: Coord, direction: 'left'|'right'|'top'|'bottom'): Coord | null {
-     if (!maze.length) return null;
+    function findAnchorTarget(from: Coord, direction: 'left'|'right'|'top'|'bottom', hasKey: boolean = false): Coord | null {
+      if (!maze.length) return null;
 
-     const rowsCount = maze.length;
-     const colsCount = maze[0]?.length ?? 0;
-     const { row: r, col: c } = from;
+      const rowsCount = maze.length;
+      const colsCount = maze[0]?.length ?? 0;
+      const { row: r, col: c } = from;
 
-     if (!maze[r] || !maze[r][c] || maze[r][c].includes('wall')) return null;
+      if (!maze[r] || !maze[r][c] || maze[r][c].includes('wall')) return null;
 
-     if (direction === 'left' || direction === 'right') {
-       const step = direction === 'left' ? -1 : 1;
-       let cc = c;
+      if (direction === 'left' || direction === 'right') {
+        const step = direction === 'left' ? -1 : 1;
+        let cc = c;
+        let edgeCell: Coord | null = null;
 
-       while (true) {
-         const next = cc + step;
-         if (next < 0 || next >= colsCount) return null;
-         if (maze[r][next].includes('wall')) {
-           const wallIdx = next;
-           const expectedWallIdx = direction === 'left' ? 0 : colsCount - 1;
-           const expectedCellIdx = direction === 'left' ? 1 : colsCount - 2;
+        while (true) {
+          const next = cc + step;
+          if (next < 0 || next >= colsCount) return null;
+          if (maze[r][next].includes('wall')) {
+            const wallIdx = next;
+            const expectedWallIdx = direction === 'left' ? 0 : colsCount - 1;
+            const expectedCellIdx = direction === 'left' ? 1 : colsCount - 2;
 
-           if (wallIdx !== expectedWallIdx) return null;
-           if (cc !== expectedCellIdx) return null;
-           if (cc === c) return null;
+            if (wallIdx !== expectedWallIdx) return null;
+            if (cc !== expectedCellIdx) return null;
+            if (cc === c) return null;
 
-           return { row: r, col: cc };
-         }
-         cc = next;
-       }
-     } else {
-       const step = direction === 'top' ? -1 : 1;
-       let rr = r;
+            edgeCell = { row: r, col: cc };
+            
+            if (hasKey && wallIdx === expectedWallIdx) {
+              const wallPos = { row: r, col: wallIdx };
+              if (maze[wallPos.row]?.[wallPos.col]?.includes('exit')) {
+                return wallPos;
+              }
+            }
+            
+            return edgeCell;
+          }
+          cc = next;
+        }
+      } else {
+        const step = direction === 'top' ? -1 : 1;
+        let rr = r;
+        let edgeCell: Coord | null = null;
 
-       while (true) {
-         const next = rr + step;
-         if (next < 0 || next >= rowsCount) return null;
-         if (maze[next][c].includes('wall')) {
-           const wallIdx = next;
-           const expectedWallIdx = direction === 'top' ? 0 : rowsCount - 1;
-           const expectedCellIdx = direction === 'top' ? 1 : rowsCount - 2;
+        while (true) {
+          const next = rr + step;
+          if (next < 0 || next >= rowsCount) return null;
+          if (maze[next][c].includes('wall')) {
+            const wallIdx = next;
+            const expectedWallIdx = direction === 'top' ? 0 : rowsCount - 1;
+            const expectedCellIdx = direction === 'top' ? 1 : rowsCount - 2;
 
-           if (wallIdx !== expectedWallIdx) return null;
-           if (rr !== expectedCellIdx) return null;
-           if (rr === r) return null;
+            if (wallIdx !== expectedWallIdx) return null;
+            if (rr !== expectedCellIdx) return null;
+            if (rr === r) return null;
 
-           return { row: rr, col: c };
-         }
-         rr = next;
-       }
-     }
-   }
+            edgeCell = { row: rr, col: c };
+            
+            if (hasKey && wallIdx === expectedWallIdx) {
+              const wallPos = { row: wallIdx, col: c };
+              if (maze[wallPos.row]?.[wallPos.col]?.includes('exit')) {
+                return wallPos;
+              }
+            }
+            
+            return edgeCell;
+          }
+          rr = next;
+        }
+      }
+    }
 
    function validatePath(from: Coord, direction: Coord, steps: number): boolean {
      if (!maze.length) return false;

@@ -61,29 +61,30 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     move(0, 1, count);
   }
 
-  function moveToAnchor(target: 'start' | 'end' | 'top' | 'bottom'): void {
-    const currentPos = position.current;
-    const direction = target === 'start' ? 'left' :
-      target === 'end' ? 'right' :
-        target === 'top' ? 'top' : 'bottom';
+   function moveToAnchor(target: 'start' | 'end' | 'top' | 'bottom'): void {
+     const currentPos = position.current;
+     const direction = target === 'start' ? 'left' :
+       target === 'end' ? 'right' :
+         target === 'top' ? 'top' : 'bottom';
 
-    const anchorTarget = navigator.findAnchorTarget(currentPos, direction);
-    if (!anchorTarget) return;
+     const hasKey = gameStatusManager.gameStatus === 'has-key';
+     const anchorTarget = navigator.findAnchorTarget(currentPos, direction, hasKey);
+     if (!anchorTarget) return;
 
-    const dr = anchorTarget.row > currentPos.row ? 1 :
-      anchorTarget.row < currentPos.row ? -1 : 0;
-    const dc = anchorTarget.col > currentPos.col ? 1 :
-      anchorTarget.col < currentPos.col ? -1 : 0;
-    const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
+     const dr = anchorTarget.row > currentPos.row ? 1 :
+       anchorTarget.row < currentPos.row ? -1 : 0;
+     const dc = anchorTarget.col > currentPos.col ? 1 :
+       anchorTarget.col < currentPos.col ? -1 : 0;
+     const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
 
-    position.current = anchorTarget;
-    if (hero && hero.heroPos) {
-      hero.moveTo(anchorTarget);
-      if (steps > 0) {
-        vimMotions.setLastMotion({ dr, dc, steps });
-      }
-    }
-  }
+     position.current = anchorTarget;
+     if (hero && hero.heroPos) {
+       hero.moveTo(anchorTarget);
+       if (steps > 0) {
+         vimMotions.setLastMotion({ dr, dc, steps });
+       }
+     }
+   }
 
    function moveToStart(): void {
      const currentPos = position.current;
