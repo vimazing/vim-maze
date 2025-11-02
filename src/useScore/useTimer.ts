@@ -54,7 +54,5 @@ export function useTimer(): TimerManager {
     };
   }, []);
 
-  console.log('timeValue', timeValue);
-
   return { timeValue, startTimer, stopTimer, resetTimer };
 }
