@@ -50,7 +50,11 @@ export function useScore({ board, hero, gameStatusManager, keyManager, gameOver 
   }, [gameStatus, board.mazeInstanceRef]);
 
   const optimalSteps = optimalRef.current;
-  const efficiency = optimalSteps > 0 ? Math.round((keystrokes / optimalSteps) * 100) : 0;
+  // Efficiency: 100% = optimal play, 0% = worst case
+  // Formula: (optimalSteps / keystrokes) * 100, clamped to 0-100
+  const efficiency = optimalSteps > 0 && keystrokes > 0 
+    ? Math.max(0, Math.min(100, Math.round((optimalSteps / keystrokes) * 100)))
+    : 100;
 
   // Check custom gameOver condition if provided
   useEffect(() => {
