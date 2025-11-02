@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTimer } from "./useTimer";
 import { useScoreTime } from "./useScoreTime";
 import { useScorePaths } from "./useScorePaths";
@@ -32,9 +32,27 @@ export function useScore({ board, hero, gameStatusManager, keyManager, rows, col
   const distToExit = entranceToExit || heroToExit;
 
   const [finalScore, setFinalScore] = useState<number | null>(null);
+  const optimalRef = useRef<number>(0);
   const keystrokes = keyManager ? keyManager.keyLog.length : 0;
 
   useScoreTime({ gameStatus, timer });
+
+  // Calculate optimal steps from entrance -> key -> exit
+  useEffect(() => {
+    const maze = board.mazeInstanceRef.current;
+    if (!maze) return;
+
+    const k = maze.getDistance("entrance", "key");
+    const e = maze.getDistance("key", "exit");
+    const total = k + e;
+
+    if (Number.isFinite(total) && total > 0) {
+      optimalRef.current = total;
+    }
+  }, [gameStatus, board.mazeInstanceRef]);
+
+  const optimalSteps = optimalRef.current;
+  const efficiency = optimalSteps > 0 ? Math.round((keystrokes / optimalSteps) * 100) : 0;
 
   useEffect(() => {
     if (gameStatus !== "started" && gameStatus !== "has-key") return;
@@ -70,6 +88,8 @@ export function useScore({ board, hero, gameStatusManager, keyManager, rows, col
      distToKey,
      distToExit,
      keystrokes,
+     optimalSteps,
+     efficiency,
      finalScore,
    };
 }

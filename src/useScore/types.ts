@@ -20,5 +20,7 @@ export type ScoreManager = {
   distToKey: number;
   distToExit: number;
   keystrokes: number;
+  optimalSteps: number;
+  efficiency: number;
   finalScore: number | null;
 };
