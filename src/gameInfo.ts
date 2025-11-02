@@ -57,56 +57,72 @@ export const gameInfo = {
     ],
   },
   
-  scoring: {
-    formula: 'Base Score = 1000 - (time penalty) - (keystroke penalty)',
-    multiplier: 'Final Score = min(1000, Base Score × size multiplier)',
-    range: '0 - 1000 points',
-    
-    penalties: [
-      { factor: 'Time', formula: 'seconds / 10', example: '60 seconds = -6 points' },
-      { factor: 'Keystrokes', formula: 'total keys / 2', example: '100 keys = -50 points' },
-    ],
-    
-    sizeMultiplier: {
-      formula: 'max(1.0, (rows × cols) / 500)',
-      description: 'Larger mazes earn higher potential scores',
-      examples: [
-        { size: '16×24 (384 cells)', multiplier: '1.0x', description: 'Small maze, no bonus' },
-        { size: '24×32 (768 cells)', multiplier: '1.54x', description: 'Medium maze' },
-        { size: '32×48 (1536 cells)', multiplier: '3.07x', description: 'Large maze' },
-      ],
-    },
-    
-    examples: [
-      {
-        size: '16×24',
-        time: '60 seconds',
-        keystrokes: 80,
-        calculation: '1000 - 6 - 40 = 954 × 1.0',
-        score: '954 / 1000',
-      },
-      {
-        size: '32×48',
-        time: '180 seconds',
-        keystrokes: 200,
-        calculation: '1000 - 18 - 100 = 882 × 3.07',
-        score: '1000 / 1000 (capped)',
-      },
-    ],
-  },
+   scoring: {
+     calculation: 'Call calculateMazeScore(scoreManager, mazeSize) to compute final score',
+     note: 'Score calculation moved to consumer - ScoreManager only provides raw metrics',
+     formula: 'Base Score = 1000 - (time penalty) - (keystroke penalty)',
+     multiplier: 'Final Score = min(1000, Base Score × size multiplier)',
+     range: '0 - 1000 points',
+     
+     penalties: [
+       { factor: 'Time', formula: 'seconds / 10', example: '60 seconds = -6 points' },
+       { factor: 'Keystrokes', formula: 'total keys / 2', example: '100 keys = -50 points' },
+     ],
+     
+     sizeMultiplier: {
+       formula: 'max(1.0, (rows × cols) / 500)',
+       description: 'Larger mazes earn higher potential scores',
+       examples: [
+         { size: '16×24 (384 cells)', multiplier: '1.0x', description: 'Small maze, no bonus' },
+         { size: '24×32 (768 cells)', multiplier: '1.54x', description: 'Medium maze' },
+         { size: '32×48 (1536 cells)', multiplier: '3.07x', description: 'Large maze' },
+       ],
+     },
+     
+     examples: [
+       {
+         size: '16×24',
+         time: '60 seconds',
+         keystrokes: 80,
+         calculation: '1000 - 6 - 40 = 954 × 1.0',
+         score: '954 / 1000',
+       },
+       {
+         size: '32×48',
+         time: '180 seconds',
+         keystrokes: 200,
+         calculation: '1000 - 18 - 100 = 882 × 3.07',
+         score: '1000 / 1000 (capped)',
+       },
+     ],
+   },
   
-  gameOver: {
-    conditions: [
-      {
-        type: 'Time Limit',
-        trigger: '10 minutes (600 seconds) by default',
-        configurable: true,
-        message: 'Time ran out!',
-        description: 'Failed to reach exit with key in time',
-      },
-    ],
-    note: 'No other game-over conditions - take your time and find the optimal path!',
-  },
+   gameOver: {
+     conditions: [
+       {
+         type: 'Custom Condition',
+         trigger: 'Defined via gameOver option in GameOptions',
+         configurable: true,
+         message: 'Game over!',
+         description: 'Can be a boolean or function that receives scoreManager metrics',
+       },
+     ],
+     examples: [
+       {
+         description: 'Time-based (10 minutes)',
+         code: 'gameOver: (sm) => sm.timeValue >= 600000',
+       },
+       {
+         description: 'Efficiency-based (exceed 150%)',
+         code: 'gameOver: (sm) => sm.efficiency > 150',
+       },
+       {
+         description: 'Combined condition',
+         code: 'gameOver: (sm) => sm.efficiency > 150 || sm.timeValue >= 600000',
+       },
+     ],
+     note: 'Game-over conditions are flexible and controlled by the game consumer. No built-in limits - define your own rules!',
+   },
   
   mazeGeneration: {
     algorithm: 'Depth-first search with backtracking',
@@ -123,19 +139,22 @@ export const gameInfo = {
     ],
   },
   
-  metrics: {
-    tracked: [
-      { metric: 'Time', unit: 'seconds', description: 'Elapsed time since game start' },
-      { metric: 'Keystrokes', unit: 'count', description: 'Total keys pressed' },
-      { metric: 'Distance to Key', unit: 'cells', description: 'Current shortest path to key' },
-      { metric: 'Distance to Exit', unit: 'cells', description: 'Current shortest path to exit' },
-    ],
-    displayed: 'Live during gameplay to help you track progress',
-  },
+   metrics: {
+     tracked: [
+       { metric: 'Time', unit: 'milliseconds', description: 'Elapsed time since game start' },
+       { metric: 'Keystrokes', unit: 'count', description: 'Total keys pressed' },
+       { metric: 'Optimal Steps', unit: 'cells', description: 'Perfect path length (entrance → key → exit)' },
+       { metric: 'Efficiency', unit: 'percentage', description: 'Keystroke efficiency ratio (100% = perfect)' },
+       { metric: 'Distance to Key', unit: 'cells', description: 'Current shortest path to key' },
+       { metric: 'Distance to Exit', unit: 'cells', description: 'Current shortest path to exit' },
+     ],
+     available: 'All metrics available via scoreManager for use in scoring or game-over conditions',
+     displayed: 'Live during gameplay to help you track progress and make decisions',
+   },
   
-  objective: 'Navigate from entrance to key, then from key to exit, before time runs out.',
-  
-  winCondition: 'Reach the exit cell while holding the key (key must be collected first).',
+    objective: 'Navigate from entrance to key, then from key to exit with a custom game-over condition.',
+    
+    winCondition: 'Reach the exit cell while holding the key (key must be collected first).',
 } as const;
 
 export type GameInfo = typeof gameInfo;
