@@ -51,9 +51,15 @@ export function useScore({ board, hero, gameStatusManager, keyManager, gameOver 
 
   const optimalSteps = optimalRef.current;
   // Efficiency: 100% = optimal play, 0% = worst case
-  // Formula: (optimalSteps / keystrokes) * 100, clamped to 0-100
-  const efficiency = optimalSteps > 0 && keystrokes > 0 
-    ? Math.max(0, Math.min(100, Math.round((optimalSteps / keystrokes) * 100)))
+  // - If keystrokes <= optimalSteps: intermediate calc showing progress toward goal
+  //   Formula: (keystrokes / optimalSteps) * 100 (shows how far along optimal path)
+  // - If keystrokes > optimalSteps: inverse calc showing how much over optimal
+  //   Formula: (optimalSteps / keystrokes) * 100 (shows excess usage)
+  // Result clamped to 0-100
+  const efficiency = optimalSteps > 0 && keystrokes > 0
+    ? keystrokes <= optimalSteps
+      ? Math.round((keystrokes / optimalSteps) * 100)
+      : Math.max(0, Math.round((optimalSteps / keystrokes) * 100))
     : 100;
 
   // Check custom gameOver condition if provided
