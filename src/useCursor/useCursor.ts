@@ -1,7 +1,6 @@
 import { useRef, useEffect } from 'react'
 import type { CursorMode, Coord } from './types';
-import type { BoardManager } from '../useBoard/types';
-import type { GameStatusManager } from '../useGameStatus/types';
+import type { GameStatusManager, BoardManager, CellTag } from '../types';
 import { useHero } from './useHero';
 import { useGameKeys } from './useGameKeys';
 import { useMazeNavigation } from '../useBoard';
@@ -15,6 +14,9 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
   const hero = useHero(board, gameStatusManager);
   const navigator = useMazeNavigation(board.mazeRef.current);
   const vimMotions = useVimMotions();
+
+  const maze = board.mazeInstanceRef.current?.maze;
+  const exitPos = maze?.[0].findIndex((cell: CellTag) => cell.includes('door'));
 
   // Sync cursor position with hero position
   useEffect(() => {
@@ -61,98 +63,101 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     move(0, 1, count);
   }
 
-   function moveToAnchor(target: 'start' | 'end' | 'top' | 'bottom'): void {
-     const currentPos = position.current;
-     const direction = target === 'start' ? 'left' :
-       target === 'end' ? 'right' :
-         target === 'top' ? 'top' : 'bottom';
+  function moveToAnchor(target: 'start' | 'end' | 'top' | 'bottom'): void {
+    const currentPos = position.current;
+    const direction = target === 'start' ? 'left' :
+      target === 'end' ? 'right' :
+        target === 'top' ? 'top' : 'bottom';
 
-     const hasKey = gameStatusManager.gameStatus === 'has-key';
-     const anchorTarget = navigator.findAnchorTarget(currentPos, direction, hasKey);
-     if (!anchorTarget) return;
+    const hasKey = gameStatusManager.gameStatus === 'has-key';
+    const anchorTarget = navigator.findAnchorTarget(currentPos, direction, hasKey);
+    if (!anchorTarget) return;
 
-     const dr = anchorTarget.row > currentPos.row ? 1 :
-       anchorTarget.row < currentPos.row ? -1 : 0;
-     const dc = anchorTarget.col > currentPos.col ? 1 :
-       anchorTarget.col < currentPos.col ? -1 : 0;
-     const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
+    const dr = anchorTarget.row > currentPos.row ? 1 :
+      anchorTarget.row < currentPos.row ? -1 : 0;
+    const dc = anchorTarget.col > currentPos.col ? 1 :
+      anchorTarget.col < currentPos.col ? -1 : 0;
+    const steps = Math.abs(anchorTarget.row - currentPos.row) + Math.abs(anchorTarget.col - currentPos.col);
 
-     position.current = anchorTarget;
-     if (hero && hero.heroPos) {
-       hero.moveTo(anchorTarget);
-       if (steps > 0) {
-         vimMotions.setLastMotion({ dr, dc, steps });
-       }
-     }
-   }
+    position.current = anchorTarget;
+    if (hero && hero.heroPos) {
+      hero.moveTo(anchorTarget);
+      if (steps > 0) {
+        vimMotions.setLastMotion({ dr, dc, steps });
+      }
+    }
+  }
 
-   function moveToStart(): void {
-     const currentPos = position.current;
-     const target = navigator.findAnchorTarget(currentPos, 'left');
-     if (!target) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     const dr = target.row > currentPos.row ? 1 : target.row < currentPos.row ? -1 : 0;
-     const dc = target.col > currentPos.col ? 1 : target.col < currentPos.col ? -1 : 0;
-     const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
-     if (!navigator.validatePath(currentPos, { row: dr, col: dc }, steps)) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     moveToAnchor('start');
-   }
+  function moveToStart(): void {
+    const currentPos = position.current;
+    const target = navigator.findAnchorTarget(currentPos, 'left');
+    if (!target) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    const dr = target.row > currentPos.row ? 1 : target.row < currentPos.row ? -1 : 0;
+    const dc = target.col > currentPos.col ? 1 : target.col < currentPos.col ? -1 : 0;
+    const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
+    if (!navigator.validatePath(currentPos, { row: dr, col: dc }, steps)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    moveToAnchor('start');
+  }
 
-   function moveToEnd(): void {
-     const currentPos = position.current;
-     const target = navigator.findAnchorTarget(currentPos, 'right');
-     if (!target) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     const dr = target.row > currentPos.row ? 1 : target.row < currentPos.row ? -1 : 0;
-     const dc = target.col > currentPos.col ? 1 : target.col < currentPos.col ? -1 : 0;
-     const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
-     if (!navigator.validatePath(currentPos, { row: dr, col: dc }, steps)) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     moveToAnchor('end');
-   }
+  function moveToEnd(): void {
+    const currentPos = position.current;
+    const target = navigator.findAnchorTarget(currentPos, 'right');
+    if (!target) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    const dr = target.row > currentPos.row ? 1 : target.row < currentPos.row ? -1 : 0;
+    const dc = target.col > currentPos.col ? 1 : target.col < currentPos.col ? -1 : 0;
+    const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
+    if (!navigator.validatePath(currentPos, { row: dr, col: dc }, steps)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    moveToAnchor('end');
+  }
 
-   function moveToTop(): void {
-     const currentPos = position.current;
-     const target = navigator.findAnchorTarget(currentPos, 'top');
-     if (!target) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     const dr = target.row > currentPos.row ? 1 : target.row < currentPos.row ? -1 : 0;
-     const dc = target.col > currentPos.col ? 1 : target.col < currentPos.col ? -1 : 0;
-     const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
-     if (!navigator.validatePath(currentPos, { row: dr, col: dc }, steps)) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     moveToAnchor('top');
-   }
+  function moveToTop(): void {
+    const currentPos = position.current;
 
-   function moveToBottom(): void {
-     const currentPos = position.current;
-     const target = navigator.findAnchorTarget(currentPos, 'bottom');
-     if (!target) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     const dr = target.row > currentPos.row ? 1 : target.row < currentPos.row ? -1 : 0;
-     const dc = target.col > currentPos.col ? 1 : target.col < currentPos.col ? -1 : 0;
-     const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
-     if (!navigator.validatePath(currentPos, { row: dr, col: dc }, steps)) {
-       window.dispatchEvent(new Event("maze-invalid"));
-       return;
-     }
-     moveToAnchor('bottom');
-   }
+    console.log("Exit position:", exitPos, currentPos);
+    console.log(currentPos, board);
+    const target = navigator.findAnchorTarget(currentPos, 'top');
+    if (!target) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    const dr = target.row > currentPos.row ? 1 : target.row < currentPos.row ? -1 : 0;
+    const dc = target.col > currentPos.col ? 1 : target.col < currentPos.col ? -1 : 0;
+    const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
+    if (!navigator.validatePath(currentPos, { row: dr, col: dc }, steps)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    moveToAnchor('top');
+  }
+
+  function moveToBottom(): void {
+    const currentPos = position.current;
+    const target = navigator.findAnchorTarget(currentPos, 'bottom');
+    if (!target) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    const dr = target.row > currentPos.row ? 1 : target.row < currentPos.row ? -1 : 0;
+    const dc = target.col > currentPos.col ? 1 : target.col < currentPos.col ? -1 : 0;
+    const steps = Math.abs(target.row - currentPos.row) + Math.abs(target.col - currentPos.col);
+    if (!navigator.validatePath(currentPos, { row: dr, col: dc }, steps)) {
+      window.dispatchEvent(new Event("maze-invalid"));
+      return;
+    }
+    moveToAnchor('bottom');
+  }
 
   function repeatLastMotion(): void {
     const motion = vimMotions.repeatLastMotion();
@@ -176,17 +181,17 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     vimMotions.resetCount();
   }
 
-   function getCount(): string {
-     return String(vimMotions.getCount());
-   }
+  function getCount(): string {
+    return String(vimMotions.getCount());
+  }
 
-   function hasCount(): boolean {
-     return vimMotions.hasCount();
-   }
+  function hasCount(): boolean {
+    return vimMotions.hasCount();
+  }
 
-   function setCount(digit: string): void {
-     vimMotions.processKey(digit);
-   }
+  function setCount(digit: string): void {
+    vimMotions.processKey(digit);
+  }
 
   function setLastKey(key: string): void {
     lastKeyRef.current = key;
@@ -196,27 +201,27 @@ export function useCursor(board: BoardManager, gameStatusManager: GameStatusMana
     return lastKeyRef.current;
   }
 
-   const cursor = {
-     position: () => position.current,
-     mode: () => mode.current,
-     move,
-     moveLeft,
-     moveRight,
-     moveUp,
-     moveDown,
-     moveToStart,
-     moveToEnd,
-     moveToTop,
-     moveToBottom,
-     repeatLastMotion,
-     resetCount,
-     getCount,
-     hasCount,
-     setCount,
-     setLastKey,
-     getLastKey,
-     hero,
-   }
+  const cursor = {
+    position: () => position.current,
+    mode: () => mode.current,
+    move,
+    moveLeft,
+    moveRight,
+    moveUp,
+    moveDown,
+    moveToStart,
+    moveToEnd,
+    moveToTop,
+    moveToBottom,
+    repeatLastMotion,
+    resetCount,
+    getCount,
+    hasCount,
+    setCount,
+    setLastKey,
+    getLastKey,
+    hero,
+  }
 
   const keyManager = useGameKeys({ cursor, gameStatusManager });
 

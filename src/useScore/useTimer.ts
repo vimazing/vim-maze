@@ -8,17 +8,24 @@ export function useTimer(): TimerManager {
   const startTimeRef = useRef<number | null>(null);
   const frameRef = useRef<number | null>(null);
   const runningRef = useRef(false);
+  const lastUpdateRef = useRef(0);
+  const currentTimeRef = useRef(0);
 
   const startTimer = () => {
     if (runningRef.current) return;
     runningRef.current = true;
     startTimeRef.current = performance.now();
+    lastUpdateRef.current = 0;
 
     const tick = () => {
       if (!runningRef.current) return;
       const now = performance.now();
       const elapsed = now - (startTimeRef.current ?? now);
-      setTimeValue(elapsed);
+      currentTimeRef.current = elapsed;
+      if (elapsed - lastUpdateRef.current >= 1000) {
+        lastUpdateRef.current = elapsed;
+        setTimeValue(elapsed);
+      }
       frameRef.current = requestAnimationFrame(tick);
     };
 
@@ -26,6 +33,7 @@ export function useTimer(): TimerManager {
   };
 
   const stopTimer = () => {
+    setTimeValue(currentTimeRef.current);
     runningRef.current = false;
     if (frameRef.current) {
       cancelAnimationFrame(frameRef.current);
@@ -37,6 +45,7 @@ export function useTimer(): TimerManager {
     stopTimer();
     setTimeValue(0);
     startTimeRef.current = null;
+    lastUpdateRef.current = 0;
   };
 
   useEffect(() => {
@@ -45,5 +54,7 @@ export function useTimer(): TimerManager {
     };
   }, []);
 
-   return { timeValue, startTimer, stopTimer, resetTimer };
+  console.log('timeValue', timeValue);
+
+  return { timeValue, startTimer, stopTimer, resetTimer };
 }

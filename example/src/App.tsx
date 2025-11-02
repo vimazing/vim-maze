@@ -1,4 +1,4 @@
-import { useGame } from "../../src/useGame";
+import { useGame, version } from "../../src";
 import { useKeyBindings } from "./useKeyBindings";
 import { useIsMobile } from "./useIsMobile";
 import '../../src/game.css';
@@ -10,7 +10,7 @@ function App() {
 
   const gameManager = useGame({ cols, rows }, useKeyBindings);
   const { containerRef, gameStatus, scoreManager } = gameManager;
-  const { timeValue, keystrokes, efficiency, optimalSteps, finalScore } = scoreManager;
+  const { timeValue, keystrokes, finalScore } = scoreManager;
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -21,7 +21,7 @@ function App() {
 
   return (
     <div className="flex flex-col items-center justify-around min-h-[100vh]">
-      <h1 className="text-6xl">VIMazing vim-maze example</h1>
+      <h1 className="text-6xl">VIMazing vim-maze <small>v{version}</small> example</h1>
       <div className="mx-auto my-4 w-fit bg-muted rounded-lg p-4">
         {(gameStatus === "started" || gameStatus === "has-key" || gameStatus === "game-won") && (
           <div className="flex gap-8 text-sm font-mono items-center">
@@ -32,16 +32,6 @@ function App() {
             <div>
               <div className="text-muted-foreground">Keystrokes</div>
               <div className="text-lg font-bold">{keystrokes}</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground">Efficiency</div>
-              <div className={`text-lg font-bold ${efficiency > 150 ? 'text-red-500' : efficiency > 100 ? 'text-yellow-500' : 'text-green-500'}`}>
-                {efficiency}%
-              </div>
-            </div>
-            <div>
-              <div className="text-muted-foreground">Optimal</div>
-              <div className="text-lg font-bold">{optimalSteps}</div>
             </div>
             {gameStatus === "game-won" && finalScore && (
               <>
