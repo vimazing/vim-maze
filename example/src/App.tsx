@@ -1,4 +1,4 @@
-import { useGame, version, calculateMazeScore } from "../../src";
+import { useGame, version, calculateMazeScore, type ScoreManager } from "../../src";
 import { useKeyBindings } from "./useKeyBindings";
 import { useIsMobile } from "./useIsMobile";
 import { useMemo } from "react";
@@ -9,7 +9,12 @@ function App() {
   const cols = isMobile ? 12 : 32;
   const rows = isMobile ? 8 : 24;
 
-  const gameManager = useGame({ cols, rows }, useKeyBindings);
+  const gameOver = (scroreManager: ScoreManager) => {
+    console.log('gameOver', scroreManager);
+    return scoreManager.efficiency < 70;
+  }
+
+  const gameManager = useGame({ cols, rows, gameOver }, useKeyBindings);
   const { containerRef, gameStatus, scoreManager } = gameManager;
   const { timeValue, keystrokes, optimalSteps, efficiency } = scoreManager;
 
@@ -30,41 +35,41 @@ function App() {
     <div className="flex flex-col items-center justify-around min-h-[100vh]">
       <h1 className="text-6xl">VIMazing vim-maze <small>v{version}</small> example</h1>
       <div className="mx-auto my-4 w-fit bg-muted rounded-lg p-4">
-         {(gameStatus === "started" || gameStatus === "has-key" || gameStatus === "game-won") && (
-           <div className="flex gap-8 text-sm font-mono items-center">
-             <div>
-               <div className="text-muted-foreground">Time</div>
-               <div className="text-lg font-bold">{formatTime(timeValue)}</div>
-             </div>
-             <div>
-               <div className="text-muted-foreground">Keystrokes</div>
-               <div className="text-lg font-bold">{keystrokes}</div>
-             </div>
-             {optimalSteps > 0 && (
-               <>
-                 <div className="w-px h-12 bg-muted-foreground/20" />
-                 <div>
-                   <div className="text-muted-foreground">Optimal Steps</div>
-                   <div className="text-lg font-bold">{optimalSteps}</div>
-                 </div>
-                 <div>
-                   <div className="text-muted-foreground">Efficiency</div>
-                   <div className="text-lg font-bold">{efficiency}%</div>
-                 </div>
-               </>
-             )}
-             {gameStatus === "game-won" && finalScore && (
-               <>
-                 <div className="w-px h-12 bg-muted-foreground/20" />
-                 <div className="text-center">
-                   <div className="text-muted-foreground">Final Score</div>
-                   <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">{finalScore}</div>
-                 </div>
-               </>
-             )}
-           </div>
-         )}
-       </div>
+        {(gameStatus === "started" || gameStatus === "has-key" || gameStatus === "game-won") && (
+          <div className="flex gap-8 text-sm font-mono items-center">
+            <div>
+              <div className="text-muted-foreground">Time</div>
+              <div className="text-lg font-bold">{formatTime(timeValue)}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Keystrokes</div>
+              <div className="text-lg font-bold">{keystrokes}</div>
+            </div>
+            {optimalSteps > 0 && (
+              <>
+                <div className="w-px h-12 bg-muted-foreground/20" />
+                <div>
+                  <div className="text-muted-foreground">Optimal Steps</div>
+                  <div className="text-lg font-bold">{optimalSteps}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Efficiency</div>
+                  <div className="text-lg font-bold">{efficiency}%</div>
+                </div>
+              </>
+            )}
+            {gameStatus === "game-won" && finalScore && (
+              <>
+                <div className="w-px h-12 bg-muted-foreground/20" />
+                <div className="text-center">
+                  <div className="text-muted-foreground">Final Score</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">{finalScore}</div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
       <div className="relative mx-auto my-4 w-fit" id="maze_container">
         <div ref={containerRef} className="relative" />
       </div>

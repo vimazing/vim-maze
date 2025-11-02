@@ -29,4 +29,5 @@ export type GameManager = {
   hero: HeroManager;
   renderer: HeroRenderManager;
   scoreManager: ScoreManager;
+  gameOverCondition?: boolean | ((scoreManager: ScoreManager) => boolean);
 } & GameStatusManager & GameKeyManager;

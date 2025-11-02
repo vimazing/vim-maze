@@ -25,6 +25,7 @@ export function useGame(options: GameOptions, platformHook?: unknown): GameManag
     hero,
     renderer,
     scoreManager,
+    gameOverCondition: gameOver,
   }
 
   if (typeof platformHook === 'function') {
