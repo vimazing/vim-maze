@@ -1,4 +1,7 @@
+import { version } from '../package.json';
+
 export const gameInfo = {
+  version,
   name: 'VIM Maze',
   description: 'Navigate procedurally generated mazes with VIM-style controls',
   
