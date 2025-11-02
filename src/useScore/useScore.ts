@@ -5,6 +5,7 @@ import { useScorePaths } from "./useScorePaths";
 import type { BoardManager } from "../useBoard/types";
 import type { GameStatusManager } from "../useGameStatus/types";
 import type { UseHeroType } from "../useCursor/types";
+import type { ScoreManager } from "./types";
 
 type UseScoreParams = {
   board: BoardManager;
@@ -14,9 +15,10 @@ type UseScoreParams = {
   rows: number;
   cols: number;
   timeLimit: number;
+  gameOver?: boolean | ((scoreManager: ScoreManager) => boolean);
 };
 
-export function useScore({ board, hero, gameStatusManager, keyManager, rows, cols, timeLimit }: UseScoreParams) {
+export function useScore({ board, hero, gameStatusManager, keyManager, rows, cols, timeLimit, gameOver }: UseScoreParams) {
   const timer = useTimer();
   const { gameStatus, setGameStatus } = gameStatusManager;
   const { timeValue, startTimer, stopTimer, resetTimer } = timer;
@@ -63,6 +65,30 @@ export function useScore({ board, hero, gameStatusManager, keyManager, rows, col
       return;
     }
   }, [gameStatus, timeValue, timeLimit, setGameStatus]);
+
+  // Check custom gameOver condition if provided
+  useEffect(() => {
+    if (gameStatus !== "started" && gameStatus !== "has-key") return;
+    if (!gameOver) return;
+
+    const scoreManager = {
+      timeValue,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      distToKey,
+      distToExit,
+      keystrokes,
+      optimalSteps,
+      efficiency,
+      finalScore,
+    };
+
+    const shouldGameOver = typeof gameOver === "function" ? gameOver(scoreManager) : gameOver;
+    if (shouldGameOver) {
+      setGameStatus("game-over");
+    }
+  }, [gameStatus, gameOver, timeValue, keystrokes, optimalSteps, efficiency, distToKey, distToExit, startTimer, stopTimer, resetTimer, finalScore, setGameStatus]);
 
   useEffect(() => {
     if (gameStatus !== "game-won") return;

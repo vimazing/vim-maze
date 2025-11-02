@@ -12,6 +12,7 @@ export type GameOptions = {
   rows: number;
   cols: number;
   timeLimit?: number;
+  gameOver?: boolean | ((scoreManager: ScoreManager) => boolean);
 };
 
 export type KeyLogEntry = { key: string; timestamp: number };
