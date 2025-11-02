@@ -22,5 +22,4 @@ export type ScoreManager = {
   keystrokes: number;
   optimalSteps: number;
   efficiency: number;
-  finalScore: number | null;
 };

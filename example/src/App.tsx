@@ -1,6 +1,7 @@
-import { useGame, version } from "../../src";
+import { useGame, version, calculateMazeScore } from "../../src";
 import { useKeyBindings } from "./useKeyBindings";
 import { useIsMobile } from "./useIsMobile";
+import { useMemo } from "react";
 import '../../src/game.css';
 
 function App() {
@@ -10,7 +11,13 @@ function App() {
 
   const gameManager = useGame({ cols, rows }, useKeyBindings);
   const { containerRef, gameStatus, scoreManager } = gameManager;
-  const { timeValue, keystrokes, optimalSteps, efficiency, finalScore } = scoreManager;
+  const { timeValue, keystrokes, optimalSteps, efficiency } = scoreManager;
+
+  const mazeSize = rows * cols;
+  const finalScore = useMemo(
+    () => gameStatus === "game-won" ? calculateMazeScore(scoreManager, mazeSize) : null,
+    [gameStatus, scoreManager, mazeSize]
+  );
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);

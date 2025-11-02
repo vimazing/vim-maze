@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useTimer } from "./useTimer";
 import { useScoreTime } from "./useScoreTime";
 import { useScorePaths } from "./useScorePaths";
@@ -12,13 +12,10 @@ type UseScoreParams = {
   hero: UseHeroType;
   gameStatusManager: GameStatusManager;
   keyManager?: { keyLog: any[] };
-  rows: number;
-  cols: number;
-  timeLimit: number;
   gameOver?: boolean | ((scoreManager: ScoreManager) => boolean);
 };
 
-export function useScore({ board, hero, gameStatusManager, keyManager, rows, cols, timeLimit, gameOver }: UseScoreParams) {
+export function useScore({ board, hero, gameStatusManager, keyManager, gameOver }: UseScoreParams) {
   const timer = useTimer();
   const { gameStatus, setGameStatus } = gameStatusManager;
   const { timeValue, startTimer, stopTimer, resetTimer } = timer;
@@ -33,7 +30,6 @@ export function useScore({ board, hero, gameStatusManager, keyManager, rows, col
   const distToKey = entranceToKey || heroToKey;
   const distToExit = entranceToExit || heroToExit;
 
-  const [finalScore, setFinalScore] = useState<number | null>(null);
   const optimalRef = useRef<number>(0);
   const keystrokes = keyManager ? keyManager.keyLog.length : 0;
 
@@ -56,16 +52,6 @@ export function useScore({ board, hero, gameStatusManager, keyManager, rows, col
   const optimalSteps = optimalRef.current;
   const efficiency = optimalSteps > 0 ? Math.round((keystrokes / optimalSteps) * 100) : 0;
 
-  useEffect(() => {
-    if (gameStatus !== "started" && gameStatus !== "has-key") return;
-
-    const timeLimitMs = timeLimit * 1000;
-    if (timeValue >= timeLimitMs) {
-      setGameStatus("game-over");
-      return;
-    }
-  }, [gameStatus, timeValue, timeLimit, setGameStatus]);
-
   // Check custom gameOver condition if provided
   useEffect(() => {
     if (gameStatus !== "started" && gameStatus !== "has-key") return;
@@ -81,30 +67,13 @@ export function useScore({ board, hero, gameStatusManager, keyManager, rows, col
       keystrokes,
       optimalSteps,
       efficiency,
-      finalScore,
     };
 
     const shouldGameOver = typeof gameOver === "function" ? gameOver(scoreManager) : gameOver;
     if (shouldGameOver) {
       setGameStatus("game-over");
     }
-  }, [gameStatus, gameOver, timeValue, keystrokes, optimalSteps, efficiency, distToKey, distToExit, startTimer, stopTimer, resetTimer, finalScore, setGameStatus]);
-
-  useEffect(() => {
-    if (gameStatus !== "game-won") return;
-
-    const seconds = timeValue / 1000;
-    const mazeSize = rows * cols;
-    
-    const timePenalty = seconds / 10;
-    const keystrokePenalty = keystrokes / 2;
-    const sizeMultiplier = Math.max(1.0, mazeSize / 500);
-    
-    const baseScore = 1000 - timePenalty - keystrokePenalty;
-    const score = Math.min(1000, Math.max(0, Math.round(baseScore * sizeMultiplier)));
-
-    setFinalScore(score);
-  }, [gameStatus, timeValue, keystrokes, rows, cols]);
+  }, [gameStatus, gameOver, timeValue, keystrokes, optimalSteps, efficiency, distToKey, distToExit, startTimer, stopTimer, resetTimer, setGameStatus]);
 
    return {
      timeValue,
@@ -116,6 +85,5 @@ export function useScore({ board, hero, gameStatusManager, keyManager, rows, col
      keystrokes,
      optimalSteps,
      efficiency,
-     finalScore,
    };
 }
